@@ -224,7 +224,7 @@ function simple_access_group_form($gid = NULL) {
   $form .= form_checkboxes(t('Roles'), 'roles', $roles, user_roles(),   t('Roles that can view'));
   $form .= form_weight('Weight', 'weight', $weight, 10, t('Lighter items will be at the top of lists.'));
   $form .= ($gid) ? form_submit(t('Submit')) : form_submit(t('Submit'));
-  $output = form($form, 'post', 'admin/access/simple_access');
+  $output = form($form, 'post', url('admin/access/simple_access'));
   print theme('page', $output);
 }
 
@@ -320,7 +320,7 @@ function simple_access_initialize($initialize = TRUE) {
     // re-enable universal view grant
     db_query('INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (0, 0, "all", 1, 0, 0)');
     variable_set('simple_access_active', FALSE);
-    drupal_set_message(t('The database has been configured and simple_access.module may now be deactivated.'));
+    drupal_set_message(t('The database has been re-configured. You should now visit %modules to disable the simple_access module itself.', array('%modules', l('the modules page', 'admin/modules'))));
   }
 }
 
