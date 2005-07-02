@@ -33,7 +33,7 @@ CREATE TABLE simple_access_roles (
 function simple_access_help($section) {
   switch ($section) {
     case 'admin/modules#description':
-      return t('Provides simple hide/view access for nodes. After enabling and <strong>BEFORE DISABLING</strong> this module, visit '.l('admin/access/simple_access', 'admin/access/simple_access').' to configure.');
+      return t('Provides simple hide/view access for nodes. After enabling this module and <strong>before disabling this module</strong>, visit %link to configure the database.', array('%link'=>l('admin/access/simple_access/setup', 'admin/access/simple_access/setup')));
     case 'admin/access/simple_access':
       return t('');
   }
@@ -266,7 +266,7 @@ function simple_access_setup_page() {
   }
   else {
     drupal_set_title(t('Deactivate Simple Access'));
-    $group = t("<p>Before deactivating simple_access.module, you'll need to click this button in order to remove the simple_access grants from the database. <strong>Do this only when you want to deactivate the module.</strong></p>");
+    $group = t("<p>Before deactivating simple_access.module, you'll need to click this button in order to remove the simple_access grants from the database. If you do not do this, all of your nodes will become invisible to anyone but administators when you deactivate the module.</p><p><strong>Do this only when you want to deactivate the module.</strong></p>");
     $group .= form_submit(t('Deactivate'));
     $output .= form(form_group('', $group));        
   }
