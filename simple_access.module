@@ -157,18 +157,20 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
       //}
       //else {
       foreach($node->simple_access as $type => $array) {
-        foreach($array as $gid) {
-          // make an array of all grants for node
-          $grants[$gid][$type] = 1;
+        if (is_array($array)) {
+          foreach($array as $gid) {
+            // make an array of all grants for node
+            $grants[$gid][$type] = 1;
+          }
+          if (count($grants[$gid]['view'])==0) {
+            // if no 'view' access groups are selected,
+            // set public view grant for node
+            $grants[0]['view'] = 1;
+            // there may be modules that let the public edit and delete nodes, but this isn't one of 'em
+            $grants[0]['update'] = 0;
+            $grants[0]['delete'] = 0;
+          } 
         }
-        if (count($grants[$gid]['view'])==0) {
-          // if no 'view' access groups are selected,
-          // set public view grant for node
-          $grants[0]['view'] = 1;
-          // there may be modules that let the public edit and delete nodes, but this isn't one of 'em
-          $grants[0]['update'] = 0;
-          $grants[0]['delete'] = 0;
-        }        
       }
       if (is_array($grants)) {
         foreach($grants as $gid => $gidgrants) {
