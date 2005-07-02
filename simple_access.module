@@ -43,11 +43,12 @@ function simple_access_menu($may_cache) {
   $access = user_access('manage simple access');
   if ($may_cache) {
     $items[] = array('path'=>'admin/access/simple_access', 'title'=>t('simple access'), 'access'=>$access, 'callback'=>'simple_access_page','type'=>MENU_LOCAL_TASK);
-    $items[] = array('path'=>'admin/access/simple_access/list', 'title'=>t('list access groups'),  'access'=>$access, 'type'=>MENU_DEFAULT_LOCAL_TASK, 'weight'=>-8);
-    $items[] = array('path'=>'admin/access/simple_access/add', 'title'=>t('add group'), 'callback'=>'simple_access_group_form', 'access'=>$access, 'type'=>MENU_LOCAL_TASK);
+    $items[] = array('path'=>'admin/access/simple_access/list', 'title'=>t('list'),  'access'=>$access, 'type'=>MENU_DEFAULT_LOCAL_TASK, 'weight'=>-8);
+    $items[] = array('path'=>'admin/access/simple_access/add', 'title'=>t('add group'), 'callback'=>'simple_access_group_form', 'access'=>$access, 'type'=>MENU_LOCAL_TASK, 'weight'=>-6);
+    $items[] = array('path'=>'admin/access/simple_access/settings', 'title'=>t('settings'), 'callback'=>'simple_access_settings_page', 'access'=>$access, 'type'=>MENU_LOCAL_TASK, 'weight'=>-4);
   }
   else {
-    $items[] = array('path'=>'admin/access/simple_access/setup', 'title'=>variable_get('simple_access_active', FALSE) ? t('deactivate') : t('setup'), 'callback'=>'simple_access_setup_page', 'access'=>$access, 'type'=>MENU_LOCAL_TASK);
+    $items[] = array('path'=>'admin/access/simple_access/setup', 'title'=>variable_get('simple_access_active', FALSE) ? t('deactivate') : t('setup'), 'callback'=>'simple_access_setup_page', 'access'=>$access, 'type'=>MENU_LOCAL_TASK, 'weight'=>8);
   
   }
   return $items;
@@ -68,19 +69,17 @@ function simple_access_perm() {
  *
  */
 function simple_access_node_grants($account, $op) {
-  if ($op == 'view') {
-    $grants = array();
-    if (user_access('access content', $account)) {
-      $grants[] = 0;
-    }
-    /*
-    if (user_access('access private content', $account)) {
-      $grants[] = 1;
-    }
-    */
-    if (isset($account->roles)) {
-      $grants = array_merge($grants, simple_access_groups_from_roles(array_keys($account->roles)));
-    }
+  $grants = array();
+  switch ($op) {
+    case 'view':
+      if (user_access('access content', $account)) {
+        $grants[] = 0;
+      }
+    case 'update' :
+    case 'delete' :
+      if (isset($account->roles)) {
+        $grants = array_merge($grants, simple_access_groups_from_roles(array_keys($account->roles)));
+      }
     return array('simple_access' => $grants);
   }
 }
@@ -95,22 +94,53 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
       // We present the selection for who can view the node in the administrative
       // block, so users with the "administer nodes" permission can view and edit
       // the settings.
-      if (!isset($node->access)) {
+      if (!isset($node->simple_access)) {
         // Load the grants from the database.
-        $result = db_query('SELECT na.gid FROM {node_access} na WHERE na.nid = %d AND na.realm = \'simple_access\' AND na.grant_view = 1', $node->nid);
+        $result = db_query('SELECT na.gid, na.grant_view, na.grant_update, na.grant_delete FROM {node_access} na WHERE na.nid = %d AND na.realm = \'simple_access\'', $node->nid);
         while($grant = db_fetch_object($result)) {
-          $grants[$grant->gid] = $grant->gid;
+          if ($grant->grant_view) {
+            $views[$grant->gid] = $grant->gid;
+          }
+          if ($grant->grant_update) {
+            $updates[$grant->gid] = $grant->gid;
+          }
+          if ($grant->grant_delete) {
+            $deletes[$grant->gid] = $grant->gid;
+          }
         }
-        if (isset($grants[0])) {
+        /*
+        if (isset($views[0])) {
           // The "public" grant was set.
+          // is this used still?
           $node->simple_access = 0;
         }
-        else {
-          $node->simple_access = $grants;
-        }
+        
+        else {*/
+          $node->simple_access = array('views'=>$views, 'updates'=>$update, 'deletes'=>$deletes);
+        //}
       }
-      $form = form_checkboxes('', 'simple_access', $grants, simple_access_group_select());
-      $output = form_group(t('Only viewable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = viewable by all.').'</span>');
+      $variable = variable_get('sa_display', array('view'));
+      if (in_array('view', $variable)) {
+        $form = form_checkboxes('', 'simple_access][view', $views, simple_access_group_select());
+        $output .= form_group(t('Only viewable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = viewable by all.').'</span>');
+      }
+      if (in_array('update', $variable)) {
+        if (isset($output)) {
+          // kludgey, I know....
+          // Drupal doesn't like to get back more than one item... so....
+          $output .= '</div><div class="extra">';
+        }
+        $form = form_checkboxes('', 'simple_access][update', $updates, simple_access_group_select());
+        $output .= form_group(t('Additionally editable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = normal behavior<br />(author and admins can edit).').'</span>');
+      }
+      if (in_array('delete', $variable)) {
+        if (isset($output)) {
+          // kludgey, I know....
+          $output .= '</div><div class="extra">';
+        }
+        $form = form_checkboxes('', 'simple_access][delete', $deletes, simple_access_group_select());
+        $output .= form_group(t('Additionally deletable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = normal behavior<br />(author and admins can delete).').'</span>');
+      }
       return $output;
     case 'delete':
       // When a node is deleted, delete any relevant grants.
@@ -118,16 +148,31 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
       break;
     case 'insert':
     case 'update':
-      // Clear out any existing grants for the node, and set new ones.
+      // Clear out any existing grants for the node. Don't worry, we'll set them again.
       db_query('DELETE FROM {node_access} WHERE nid = %d AND realm = \'simple_access\'', $node->nid);
-      $node->simple_access = count($node->simple_access) ? $node->simple_access : 0;
-      if ($node->simple_access == 0) {
-        // If the node is public, we need to grant access to everyone.
-        db_query('INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (%d, %d, \'simple_access\', %d, %d, %d)', $node->nid, 0, 1, 0, 0);
+      //$node->simple_access['view'] = count($node->simple_access['']) ? $node->simple_access : 0;
+      //if ($node->simple_access == 0) {
+        // If no boxes are checked everyone gets to see the node.
+      //  db_query('INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (%d, %d, \'simple_access\', %d, %d, %d)', $node->nid, 0, 1, 0, 0);
+      //}
+      //else {
+      foreach($node->simple_access as $type => $array) {
+        foreach($array as $gid) {
+          // make an array of all grants for node
+          $grants[$gid][$type] = 1;
+        }
+        if (count($grants[$gid]['view'])==0) {
+          // if no 'view' access groups are selected,
+          // set public view grant for node
+          $grants[0]['view'] = 1;
+          // there may be modules that let the public edit and delete nodes, but this isn't one of 'em
+          $grants[0]['update'] = 0;
+          $grants[0]['delete'] = 0;
+        }        
       }
-      else {
-        foreach($node->simple_access as $key=>$value) {
-          db_query("INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (%d, %d, 'simple_access', %d, %d, %d)", $node->nid, $value, 1, 0, 0);
+      if (is_array($grants)) {
+        foreach($grants as $gid => $gidgrants) {
+          db_query("INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (%d, %d, 'simple_access', %d, %d, %d)", $node->nid, $gid, $gidgrants['view'], $gidgrants['update'], $gidgrants['delete']);
         }
       }
       break;
@@ -172,12 +217,31 @@ function simple_access_page($op = NULL, $gid = NULL) {
         }
         $output .= theme('table', $header, $rows, array('style'=>'width:100%'));
         $output .= '<br />'.l(t('add another access group'), 'admin/access/simple_access/add');
+        
+        
       }
       else {
         drupal_set_message(t('You have not yet defined any access groups.'));
         drupal_goto('admin/access/simple_access/add');
       }
   }
+  print theme('page', $output);
+}
+
+function simple_access_settings_page() {
+  drupal_set_title(t('Simple Access Settings'));
+  if ($_POST['op'] == t('Save Options')) {
+    variable_set('sa_display', $_POST['edit']['sa_display']);
+    drupal_set_message(t('Options saved'));
+  }
+  $options = array(
+    'view' => t('<strong>View</strong>: Displays viewability selections at top of node form. Selected access groups will be the only users who can view the node. All unselected = normal node behavior (viewable by all).<br />'),
+    'update' => t('<strong>Edit</strong>: Displays editability selections at top of node form. Users who are part of selected access groups will be able to edit this node. All unselected = "normal" node behavior (only author and admins may edit).<br />'), 
+    'delete' => t('<strong>Delete</strong>: Displays deleteability selections at top of node form. Users who are part of selected access groups will be able to delete this node. All unselected = "normal" node behavior (only author and admins may delete).<br />')        
+  );
+  $form .= form_checkboxes(t('Display'), 'sa_display', variable_get('sa_display', array('view')), $options, t('Which options should appear on node add/edit pages for administrators? Select at least one.'), NULL, TRUE);
+  $form .= form_submit(t('Save Options'));
+  $output .= form($form);
   print theme('page', $output);
 }
 
