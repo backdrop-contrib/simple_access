@@ -33,7 +33,7 @@ CREATE TABLE simple_access_roles (
 function simple_access_help($section) {
   switch ($section) {
     case 'admin/modules#description':
-      return t('Provides simple hide/view access for nodes. After enabling this module, visit '.l('admin/access/simple_access', 'admin/access/simple_access').' to configure.');
+      return t('Provides simple hide/view access for nodes. After enabling and <strong>BEFORE DISABLING</strong> this module, visit '.l('admin/access/simple_access', 'admin/access/simple_access').' to configure.');
     case 'admin/access/simple_access':
       return t('');
   }
