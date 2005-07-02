@@ -94,52 +94,58 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
       // We present the selection for who can view the node in the administrative
       // block, so users with the "administer nodes" permission can view and edit
       // the settings.
-      if (!isset($node->simple_access)) {
-        // Load the grants from the database.
-        $result = db_query('SELECT na.gid, na.grant_view, na.grant_update, na.grant_delete FROM {node_access} na WHERE na.nid = %d AND na.realm = \'simple_access\'', $node->nid);
-        while($grant = db_fetch_object($result)) {
-          if ($grant->grant_view) {
-            $views[$grant->gid] = $grant->gid;
+      if (variable_get('simple_access_active', FALSE)) {
+        if (!isset($node->simple_access)) {
+          // Load the grants from the database.
+          $result = db_query('SELECT na.gid, na.grant_view, na.grant_update, na.grant_delete FROM {node_access} na WHERE na.nid = %d AND na.realm = \'simple_access\'', $node->nid);
+          while($grant = db_fetch_object($result)) {
+            if ($grant->grant_view) {
+              $views[$grant->gid] = $grant->gid;
+            }
+            if ($grant->grant_update) {
+              $updates[$grant->gid] = $grant->gid;
+            }
+            if ($grant->grant_delete) {
+              $deletes[$grant->gid] = $grant->gid;
+            }
           }
-          if ($grant->grant_update) {
-            $updates[$grant->gid] = $grant->gid;
+          /*
+          if (isset($views[0])) {
+            // The "public" grant was set.
+            // is this used still?
+            $node->simple_access = 0;
           }
-          if ($grant->grant_delete) {
-            $deletes[$grant->gid] = $grant->gid;
+          
+          else {*/
+            $node->simple_access = array('views'=>$views, 'updates'=>$update, 'deletes'=>$deletes);
+          //}
+        }
+        $variable = variable_get('sa_display', array('view'));
+        if (in_array('view', $variable)) {
+          $form = form_checkboxes('', 'simple_access][view', $views, simple_access_group_select());
+          $output .= form_group(t('Only viewable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = viewable by all.').'</span>');
+        }
+        if (in_array('update', $variable)) {
+          if (isset($output)) {
+            // kludgey, I know....
+            // Drupal doesn't like to get back more than one item... so....
+            $output .= '</div><div class="extra">';
           }
+          $form = form_checkboxes('', 'simple_access][update', $updates, simple_access_group_select());
+          $output .= form_group(t('Additionally editable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = normal behavior<br />(author and admins can edit).').'</span>');
         }
-        /*
-        if (isset($views[0])) {
-          // The "public" grant was set.
-          // is this used still?
-          $node->simple_access = 0;
+        if (in_array('delete', $variable)) {
+          if (isset($output)) {
+            // kludgey, I know....
+            $output .= '</div><div class="extra">';
+          }
+          $form = form_checkboxes('', 'simple_access][delete', $deletes, simple_access_group_select());
+          $output .= form_group(t('Additionally deletable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = normal behavior<br />(author and admins can delete).').'</span>');
         }
-        
-        else {*/
-          $node->simple_access = array('views'=>$views, 'updates'=>$update, 'deletes'=>$deletes);
-        //}
       }
-      $variable = variable_get('sa_display', array('view'));
-      if (in_array('view', $variable)) {
-        $form = form_checkboxes('', 'simple_access][view', $views, simple_access_group_select());
-        $output .= form_group(t('Only viewable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = viewable by all.').'</span>');
-      }
-      if (in_array('update', $variable)) {
-        if (isset($output)) {
-          // kludgey, I know....
-          // Drupal doesn't like to get back more than one item... so....
-          $output .= '</div><div class="extra">';
-        }
-        $form = form_checkboxes('', 'simple_access][update', $updates, simple_access_group_select());
-        $output .= form_group(t('Additionally editable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = normal behavior<br />(author and admins can edit).').'</span>');
-      }
-      if (in_array('delete', $variable)) {
-        if (isset($output)) {
-          // kludgey, I know....
-          $output .= '</div><div class="extra">';
-        }
-        $form = form_checkboxes('', 'simple_access][delete', $deletes, simple_access_group_select());
-        $output .= form_group(t('Additionally deletable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = normal behavior<br />(author and admins can delete).').'</span>');
+      else {
+        // module is enabled, but database hasn't been configured
+        $output = form_group(t('Simple Access'), t('Simple Access needs to configure the database before use. Please go to %link to set it up.', array('%link'=>l('admin/access/simple_access/setup', 'admin/access/simple_access/setup'))));
       }
       return $output;
     case 'delete':
@@ -150,12 +156,6 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
     case 'update':
       // Clear out any existing grants for the node. Don't worry, we'll set them again.
       db_query('DELETE FROM {node_access} WHERE nid = %d AND realm = \'simple_access\'', $node->nid);
-      //$node->simple_access['view'] = count($node->simple_access['']) ? $node->simple_access : 0;
-      //if ($node->simple_access == 0) {
-        // If no boxes are checked everyone gets to see the node.
-      //  db_query('INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (%d, %d, \'simple_access\', %d, %d, %d)', $node->nid, 0, 1, 0, 0);
-      //}
-      //else {
       foreach($node->simple_access as $type => $array) {
         if (is_array($array)) {
           foreach($array as $gid) {
