@@ -210,7 +210,7 @@ function simple_access_page($op = NULL, $gid = NULL) {
         foreach ($rg as $g) {
           $gid = $g['gid'];
           $rows[$gid]['group'] = $g['name'];
-          unset($r);
+          $r = array();
           foreach($g['roles'] as $rid) {
             $r[] = $roles[$rid];
           }
