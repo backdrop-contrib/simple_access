@@ -162,20 +162,18 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
             // make an array of all grants for node
             $grants[$gid][$type] = 1;
           }
-          if (count($grants[$gid]['view'])==0) {
-            // if no 'view' access groups are selected,
-            // set public view grant for node
-            $grants[0]['view'] = 1;
-            // there may be modules that let the public edit and delete nodes, but this isn't one of 'em
-            $grants[0]['update'] = 0;
-            $grants[0]['delete'] = 0;
-          } 
         }
       }
-      if (is_array($grants)) {
-        foreach($grants as $gid => $gidgrants) {
-          db_query("INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (%d, %d, 'simple_access', %d, %d, %d)", $node->nid, $gid, $gidgrants['view'], $gidgrants['update'], $gidgrants['delete']);
-        }
+      if (!count($grants[$gid]['view'])) {
+        // if no 'view' access groups are selected,
+        // set public view grant for node
+        $grants[0]['view'] = 1;
+        // there may be modules that let the public edit and delete nodes, but this isn't one of 'em. So....
+        $grants[0]['update'] = 0;
+        $grants[0]['delete'] = 0;
+      } 
+      foreach($grants as $gid => $gidgrants) {
+        db_query("INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (%d, %d, 'simple_access', %d, %d, %d)", $node->nid, $gid, $gidgrants['view'], $gidgrants['update'], $gidgrants['delete']);
       }
       break;
   }
