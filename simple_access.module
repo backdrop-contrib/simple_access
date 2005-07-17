@@ -154,26 +154,39 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
       break;
     case 'insert':
     case 'update':
-      // Clear out any existing grants for the node. Don't worry, we'll set them again.
-      db_query('DELETE FROM {node_access} WHERE nid = %d AND realm = \'simple_access\'', $node->nid);
-      foreach($node->simple_access as $type => $array) {
-        if (is_array($array)) {
-          foreach($array as $gid) {
+      // if user doesn't have administer nodes permission, then the simple_access
+      // boxes weren't on the page... so don't parse what ain't there!
+      if (user_access('administer nodes')) {
+        // Clear out any existing grants for the node. Don't worry, we'll set them again.
+        db_query('DELETE FROM {node_access} WHERE nid = %d AND realm = \'simple_access\'', $node->nid);
+        
+        $views = FALSE;
+        // loop through simple_access arrays from page submission
+        // $type is either 'view', 'update', or 'delete'
+        foreach((array)$node->simple_access as $type => $array) {
+          // loop through each checkbox of the group
+          foreach((array)$array as $gid) {
             // make an array of all grants for node
             $grants[$gid][$type] = 1;
+            if ($type == 'view') {
+              // if we've gotten here, then one of the view boxes is checked so...
+              $views = TRUE;
+            }
           }
         }
-      }
-      if (!count($grants[$gid]['view'])) {
-        // if no 'view' access groups are selected,
-        // set public view grant for node
-        $grants[0]['view'] = 1;
-        // there may be modules that let the public edit and delete nodes, but this isn't one of 'em. So....
-        $grants[0]['update'] = 0;
-        $grants[0]['delete'] = 0;
-      } 
-      foreach($grants as $gid => $gidgrants) {
-        db_query("INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (%d, %d, 'simple_access', %d, %d, %d)", $node->nid, $gid, $gidgrants['view'], $gidgrants['update'], $gidgrants['delete']);
+        if (!$views) {
+          // if no 'view' access groups are selected,
+          // set public view grant for node
+          $grants[0]['view'] = 1;
+          // there may be modules that let the public edit and delete nodes, but this isn't one of 'em. So....
+          $grants[0]['update'] = 0;
+          $grants[0]['delete'] = 0;
+        }
+
+        // this next line is wrong! Where is $gid coming from?
+        foreach($grants as $gid => $gidgrants) {
+          db_query("INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (%d, %d, 'simple_access', %d, %d, %d)", $node->nid, $gid, $gidgrants['view'], $gidgrants['update'], $gidgrants['delete']);
+        }
       }
       break;
   }
