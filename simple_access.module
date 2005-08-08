@@ -155,11 +155,10 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
     case 'insert':
     case 'update':
       // if user doesn't have administer nodes permission, then the simple_access
-      // boxes weren't on the page... so don't parse what ain't there!
-      if (user_access('administer nodes')) {
+      // boxes weren't on the page... so don't parse what ain't there! (see 'else')
+      if (user_access('administer nodes')) {        
         // Clear out any existing grants for the node. Don't worry, we'll set them again.
         db_query('DELETE FROM {node_access} WHERE nid = %d AND realm = \'simple_access\'', $node->nid);
-        
         $views = FALSE;
         // loop through simple_access arrays from page submission
         // $type is either 'view', 'update', or 'delete'
@@ -187,6 +186,15 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
         foreach($grants as $gid => $gidgrants) {
           db_query("INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (%d, %d, 'simple_access', %d, %d, %d)", $node->nid, $gid, $gidgrants['view'], $gidgrants['update'], $gidgrants['delete']);
         }
+      }
+      else {
+        // the user is not an administrator
+        // so does the node already have some access permissions?
+        if (!db_result(db_query("SELECT nid FROM {node_access} WHERE nid = %d AND realm = 'simple_access'", $node->nid))) {
+          // if not set it up for everyone to view...
+          db_query("INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (%d, %d, 'simple_access', %d, %d, %d)", $node->nid, 0, 1, 0, 0);
+        }
+      
       }
       break;
   }
