@@ -457,7 +457,7 @@ function simple_access_nodes() {
     $rows[$r->nid]['nid'] = array('data' => $r->nid, 'style' => 'vertical-align:top');
     $info = '<div>'.$r->title.'</div><div style="font-size:xx-small">'.implode(', ', $groups).'</div>';
     $rows[$r->nid]['title'] = array('data' => $info, 'style' => 'vertical-align:top');
-    $rows[$r->nid]['ops'] = array('data' => l(t('edit'), 'node/'.$r->nid.'/edit', array(), drupal_get_destination()), 'style' => 'vertical-align:top');
+    $rows[$r->nid]['ops'] = array('data' => l(t('view'), 'node/'.$r->nid).' '.l(t('edit'), 'node/'.$r->nid.'/edit', array(), drupal_get_destination()), 'style' => 'vertical-align:top');
   }
   if ($rows) {
     $output .= theme('table', $header, $rows, array('style' => 'width:100%'));
