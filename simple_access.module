@@ -22,7 +22,7 @@ CREATE TABLE simple_access_roles (
   gid int(10) NOT NULL default '0',
   rid int(10) NOT NULL default '0'
 ) TYPE=MyISAM;
- 
+
  * @endcode
  *
  */
@@ -46,7 +46,7 @@ function simple_access_menu($may_cache) {
     $items[] = array('path'=>'admin/access/simple_access/list', 'title'=>t('list'),  'access'=>$access, 'type'=>MENU_DEFAULT_LOCAL_TASK, 'weight'=>-8);
     $items[] = array('path'=>'admin/access/simple_access/add', 'title'=>t('add group'), 'callback'=>'simple_access_group_form', 'access'=>$access, 'type'=>MENU_LOCAL_TASK, 'weight'=>-6);
     $items[] = array('path'=>'admin/access/simple_access/settings', 'title'=>t('settings'), 'callback'=>'simple_access_settings_page', 'access'=>$access, 'type'=>MENU_LOCAL_TASK, 'weight'=>-4);
-    
+
     $items[] = array('path'=>'admin/node/simple_access', 'title'=>t('access'), 'access' => user_access('administer nodes'), 'callback'=>'simple_access_nodes', 'type'=>MENU_LOCAL_TASK, 'weight'=>2);
     $items[] = array('path'=>'admin/node/simple_access/view', 'title'=>t('view'), 'callback'=>'simple_access_nodes', 'access' => user_access('administer nodes'), 'type'=>MENU_DEFAULT_LOCAL_TASK, 'weight'=>-5);
     $items[] = array('path'=>'admin/node/simple_access/edit', 'title'=>t('edit'), 'callback'=>'simple_access_nodes', 'access' => user_access('administer nodes'), 'type'=>MENU_LOCAL_TASK, 'weight'=>-4);
@@ -55,7 +55,7 @@ function simple_access_menu($may_cache) {
   }
   else {
     $items[] = array('path'=>'admin/access/simple_access/setup', 'title'=>variable_get('simple_access_active', FALSE) ? t('deactivate') : t('setup'), 'callback'=>'simple_access_setup_page', 'access'=>$access, 'type'=>MENU_LOCAL_TASK, 'weight'=>8);
-  
+
   }
   return $items;
 }
@@ -121,7 +121,7 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
             // is this used still?
             $node->simple_access = 0;
           }
-          
+
           else {*/
             $node->simple_access = array('views'=>$views, 'updates'=>$update, 'deletes'=>$deletes);
           //}
@@ -178,7 +178,7 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
     case 'update':
       // if user doesn't have administer nodes permission, then the simple_access
       // boxes weren't on the page... so don't parse what ain't there! (see 'else')
-      if (user_access('administer nodes')) {        
+      if (user_access('administer nodes')) {
         // Clear out any existing grants for the node. Don't worry, we'll set them again.
         db_query('DELETE FROM {node_access} WHERE nid = %d AND realm = \'simple_access\'', $node->nid);
         $views = FALSE;
@@ -259,8 +259,8 @@ function simple_access_page($op = NULL, $gid = NULL) {
         }
         $output .= theme('table', $header, $rows, array('style'=>'width:100%'));
         $output .= '<br />'.l(t('add another access group'), 'admin/access/simple_access/add');
-        
-        
+
+
       }
       else {
         drupal_set_message(t('You have not yet defined any access groups.'));
@@ -278,8 +278,8 @@ function simple_access_settings_page() {
   }
   $options = array(
     'view' => t('<strong>View</strong>: Displays viewability selections at top of node form. Selected access groups will be the only users who can view the node. All unselected = normal node behavior (viewable by all).<br />'),
-    'update' => t('<strong>Edit</strong>: Displays editability selections at top of node form. Users who are part of selected access groups will be able to edit this node. All unselected = "normal" node behavior (only author and admins may edit).<br />'), 
-    'delete' => t('<strong>Delete</strong>: Displays deleteability selections at top of node form. Users who are part of selected access groups will be able to delete this node. All unselected = "normal" node behavior (only author and admins may delete).<br />')        
+    'update' => t('<strong>Edit</strong>: Displays editability selections at top of node form. Users who are part of selected access groups will be able to edit this node. All unselected = "normal" node behavior (only author and admins may edit).<br />'),
+    'delete' => t('<strong>Delete</strong>: Displays deleteability selections at top of node form. Users who are part of selected access groups will be able to delete this node. All unselected = "normal" node behavior (only author and admins may delete).<br />')
   );
   $form .= form_checkboxes(t('Display'), 'sa_display', variable_get('sa_display', array('view')), $options, t('Which options should appear on node add/edit pages for administrators? Select at least one.'), NULL, TRUE);
   $form .= form_submit(t('Save Options'));
@@ -308,7 +308,7 @@ function simple_access_setup_page() {
     drupal_set_title(t('Deactivate Simple Access'));
     $group = t("<p>Before deactivating simple_access.module, you'll need to click this button in order to remove the simple_access grants from the database. If you do not do this, all of your nodes will become invisible to anyone but administators when you deactivate the module.</p><p><strong>Do this only when you want to deactivate the module.</strong></p>");
     $group .= form_submit(t('Deactivate'));
-    $output .= form(form_group('', $group));        
+    $output .= form(form_group('', $group));
   }
   print theme('page', $output);
 }
@@ -324,9 +324,9 @@ function simple_access_group_form($gid = NULL) {
     $form .= form_hidden('gid', $gid);
   }
   else {
-    drupal_set_title(t('Create Access Group'));  
+    drupal_set_title(t('Create Access Group'));
   }
-  $form .= form_textfield(t('Name'), 'name', $name, 40, 80, t('ThThe name for the access group as it will appear on the content editing form.'), $attributes = NULL, TRUE);
+  $form .= form_textfield(t('Name'), 'name', $name, 40, 80, t('The name for the access group as it will appear on the content editing form.'), $attributes = NULL, TRUE);
   $form .= form_checkboxes(t('Roles'), 'roles', $roles, user_roles(),   t('Roles that can view'));
   $form .= form_weight('Weight', 'weight', $weight, 10, t('When setting permissions, heavier names will sink and lighter names will be positioned nearer the top.'));
   $form .= ($gid) ? form_submit(t('Submit')) : form_submit(t('Submit'));
@@ -435,7 +435,7 @@ function simple_access_initialize($initialize = TRUE) {
   * List hidden, editable, and deletable nodes
   *
   */
-  
+
 function simple_access_nodes() {
   switch(arg(3)) {
     case 'edit' :
