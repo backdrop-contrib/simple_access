@@ -127,8 +127,14 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
           //}
         }
         $variable = variable_get('sa_display', array('view'));
+        $options = simple_access_group_select();
         if (in_array('view', $variable)) {
-          $form = form_checkboxes('', 'simple_access][view', $views, simple_access_group_select());
+          if ($options) {
+            $form = form_checkboxes('', 'simple_access][view', $views, $options);
+          }
+          else {
+            $form = t('No <a href="%url">access groups</a> have been defined', array('%url', url('admin/access/simple_access')));
+          }
           $output .= form_group(t('Only viewable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = viewable by all.').'</span>');
         }
         if (in_array('update', $variable)) {
@@ -137,7 +143,12 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
             // Drupal doesn't like to get back more than one item... so....
             $output .= '</div><div class="extra">';
           }
-          $form = form_checkboxes('', 'simple_access][update', $updates, simple_access_group_select());
+          if ($options) {
+            $form = form_checkboxes('', 'simple_access][update', $updates, simple_access_group_select());
+          }
+          else {
+            $form = t('No <a href="%url">access groups</a> have been defined', array('%url', url('admin/access/simple_access')));
+          }
           $output .= form_group(t('Additionally editable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = normal behavior<br />(author and admins can edit).').'</span>');
         }
         if (in_array('delete', $variable)) {
@@ -145,7 +156,12 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
             // kludgey, I know....
             $output .= '</div><div class="extra">';
           }
-          $form = form_checkboxes('', 'simple_access][delete', $deletes, simple_access_group_select());
+          if ($options) {
+            $form = form_checkboxes('', 'simple_access][delete', $deletes, simple_access_group_select());
+          }
+          else {
+            $form = t('No <a href="%url">access groups</a> have been defined', array('%url', url('admin/access/simple_access')));
+          }
           $output .= form_group(t('Additionally deletable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = normal behavior<br />(author and admins can delete).').'</span>');
         }
       }
@@ -200,7 +216,6 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
           // if not set it up for everyone to view...
           db_query("INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (%d, %d, 'simple_access', %d, %d, %d)", $node->nid, 0, 1, 0, 0);
         }
-      
       }
       break;
   }
@@ -311,9 +326,9 @@ function simple_access_group_form($gid = NULL) {
   else {
     drupal_set_title(t('Create Access Group'));  
   }
-  $form .= form_textfield(t('Name'), 'name', $name, 40, 80, t('The name for the access group as it will appear on the node edit page.'), $attributes = NULL, TRUE);
+  $form .= form_textfield(t('Name'), 'name', $name, 40, 80, t('ThThe name for the access group as it will appear on the content editing form.'), $attributes = NULL, TRUE);
   $form .= form_checkboxes(t('Roles'), 'roles', $roles, user_roles(),   t('Roles that can view'));
-  $form .= form_weight('Weight', 'weight', $weight, 10, t('Lighter items will be at the top of lists.'));
+  $form .= form_weight('Weight', 'weight', $weight, 10, t('When setting permissions, heavier names will sink and lighter names will be positioned nearer the top.'));
   $form .= ($gid) ? form_submit(t('Submit')) : form_submit(t('Submit'));
   $output = form($form, 'post', url('admin/access/simple_access'));
   print theme('page', $output);
