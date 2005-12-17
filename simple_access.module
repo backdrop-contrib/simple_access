@@ -87,8 +87,6 @@ function simple_access_node_grants($account, $op) {
  */
 function simple_access_nodeapi(&$node, $op, $arg = 0) {
   switch ($op) {
-    case 'form':
-      return simple_access_form($node);
     case 'delete':
       // When a node is deleted, delete any relevant grants.
       db_query('DELETE FROM {node_access} WHERE nid = %d AND realm = \'simple_access\'', $node->nid);
@@ -144,10 +142,28 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
   }
 }
 
-function simple_access_form(&$node){
+function simple_access_form_alter($form_id, &$form){
+  // if this is a node form...
+  if (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id) {
+    $simple_access_form = simple_access_form($form['#node']);
+    $form = array_merge($form, $simple_access_form);
+  }
+}
+
+function simple_access_form($node){
   if (user_access('assign access to nodes') || user_access('administer nodes')){
     //include the css
     theme_add_style(drupal_get_path('module', 'simple_access') .'/simple_access.css');
+    
+    // set up the outer fieldset
+      $form['simple_access'] = array(
+        '#title' => t('Access'),
+        '#type' => 'fieldset',
+        '#collapsible' => true,
+        '#collapsed' => true,
+        '#tree' => true,
+        '#weight' => 5
+      );
 
     if (variable_get('simple_access_active', FALSE)) {
       if (!isset($node->simple_access)) {
@@ -175,16 +191,6 @@ function simple_access_form(&$node){
       $percent = 90/$count;
 
       $options = simple_access_group_select(user_access('administer nodes'));
-
-      // set up the outer fieldset
-      $form['simple_access'] = array(
-        '#title' => t('Access'),
-        '#type' => 'fieldset',
-        '#collapsible' => true,
-        '#collapsed' => true,
-        '#tree' => true,
-        '#weight' => 5
-      );
 
       // this is the only stuff that changes for each
       // so we put it all in one place for easy editing
@@ -298,6 +304,12 @@ function simple_access_form(&$node){
       );
       */
     }
+    else {
+      $form['simple_access']['error'] = array(
+        '#type' => 'markup',
+        '#value' => '<p>'.t('Simple Access needs to configure the database before use. Please go to %link to set it up.', array('%link'=>l('admin/access/simple_access/setup', 'admin/access/simple_access/setup'))).'</p>'
+      );
+    }
     //return drupal_get_form('simple_access_node', $form);
     //var_dump($form);
 
@@ -383,11 +395,12 @@ function simple_access_settings_page() {
     '#type' => 'submit',
     '#value' => t('Save Options')
   );
-  $output .= drupal_get_form('simple_access_settings', $form);
+  //$output .= drupal_get_form('simple_access_settings', $form);
   //$form .= form_checkboxes(t('Display'), 'sa_display', variable_get('sa_display', array('view')), $options, t('Which options should appear on node add/edit pages for administrators? Select at least one.'), NULL, TRUE);
   //$form .= form_submit(t('Save Options'));
   //$output .= form($form);
   //print theme('page', $output);
+  $output = drupal_get_form('simple_access_settings', $form);
   return $output;
 }
 
@@ -429,7 +442,6 @@ function simple_access_setup_page() {
   //print theme('page', $output);
   return $output;
 }
-
 
 function simple_access_group_form($gid = NULL) {
   if ($gid) {
