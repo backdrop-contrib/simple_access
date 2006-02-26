@@ -170,14 +170,16 @@ function simple_access_form($node){
         // Load the grants from the database.
         $result = db_query('SELECT na.gid, na.grant_view, na.grant_update, na.grant_delete FROM {node_access} na WHERE na.nid = %d AND na.realm = \'simple_access\'', $node->nid);
         while($grant = db_fetch_object($result)) {
-          if ($grant->grant_view) {
-            $views[$grant->gid] = $grant->gid;
-          }
-          if ($grant->grant_update) {
-            $updates[$grant->gid] = $grant->gid;
-          }
-          if ($grant->grant_delete) {
-            $deletes[$grant->gid] = $grant->gid;
+          if ($grant->gid > 0) {
+            if ($grant->grant_view) {
+              $views[$grant->gid] = $grant->gid;
+            }
+            if ($grant->grant_update) {
+              $updates[$grant->gid] = $grant->gid;
+            }
+            if ($grant->grant_delete) {
+              $deletes[$grant->gid] = $grant->gid;
+            }
           }
         }
         $node->simple_access = array(
@@ -458,6 +460,7 @@ function simple_access_group_form($gid = NULL) {
   }
   else {
     drupal_set_title(t('Create Access Group'));
+    $weight = 0;
   }
   //$form .= form_textfield(t('Name'), 'name', $name, 40, 80, t('The name for the access group as it will appear on the content editing form.'), $attributes = NULL, TRUE);
   $form['name'] = array(
