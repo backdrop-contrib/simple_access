@@ -1,0 +1,32 @@
+<?php
+// $Id$
+
+/**
+ * Implementation of hook_install()
+ */
+function simple_access_install() {
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      db_query("CREATE TABLE {simple_access_groups} (
+        gid int(10) NOT NULL default '0',
+        name varchar(50) NOT NULL default '',
+        weight int(3) NOT NULL default '0'
+      ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
+      db_query("CREATE TABLE {simple_access_roles} (
+        gid int(10) NOT NULL default '0',
+        rid int(10) NOT NULL default '0'
+      ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
+      break;
+    case 'pgsql':
+      break;
+  }
+  drupal_set_message(t('simple access has created the required tables.'));
+}
+
+/**
+ * Updates
+ */
+function simple_access_update_1() {
+  return _system_update_utf8(array('simple_access_groups', 'simple_access_roles'));
+}
