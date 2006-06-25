@@ -145,8 +145,9 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
 function simple_access_form_alter($form_id, &$form){
   // if this is a node form...
   if (isset($form['type']) && $form['type']['#value'] .'_node_form' == $form_id) {
-    $simple_access_form = simple_access_form($form['#node']);
-    $form = array_merge($form, $simple_access_form);
+    if ($simple_access_form = simple_access_form($form['#node'])) {
+      $form = array_merge($form, $simple_access_form);
+    }
   }
 }
 
