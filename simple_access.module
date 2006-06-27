@@ -567,7 +567,7 @@ function simple_access_groups_from_roles($roles) {
 
 function simple_access_save_group($edit) {
   if (!$edit['gid']) {
-    $edit['gid'] = db_next_id('simple_access_gid');
+    $edit['gid'] = db_next_id('{simple_access}_gid');
   }
   db_query('DELETE FROM {simple_access_roles} WHERE gid = %d', $edit['gid']);
   db_query('DELETE FROM {simple_access_groups} WHERE gid = %d', $edit['gid']);
@@ -662,6 +662,3 @@ function simple_access_nodes() {
   //print theme('page', $output);
   return $output;
 }
-
-
-?>
