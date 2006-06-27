@@ -413,37 +413,33 @@ function simple_access_setup_page() {
     drupal_goto('admin/access/simple_access');
   }
   elseif ($_POST['op'] == t('Deactivate')) {
-    //print theme('page', theme('confirm', t('Are you sure you want to deactivate the module?<br />All nodes will become viewable by everyone.'), 'admin/access/simple_access'));
-    $output = confirm_form('simple_access_deactivate', $form, t('Are you sure you want to deactivate the module?<br />All nodes will become viewable by everyone.'), 'admin/access/simple_access');
-    return $output;
+    return confirm_form('simple_access_deactivate_confirm', $form, t('Are you sure you want to deactivate the module?'), 'admin/access/simple_access/setup', t('All nodes will become viewable by everyone. This action cannot be undone'), t('Deactivate'), t('Cancel'));
   }
-  elseif ($_POST['edit']['confirm']) {
-    simple_access_initialize(FALSE);
-  }
+
   if (!variable_get('simple_access_active', FALSE)) {
     drupal_set_title(t('Setup Database for Simple Access'));
-    //$group .= form_submit(t('Setup Database'));
     $form[] = array(
       '#type' => 'submit',
       '#value' => t('Setup Database'),
       '#prefix' => t("<p>In order to activate simple_access, the database needs to be configured.</p><p>Click this button to get things going.</p>")
     );
-    //$output = form(form_group('', $group));
     $output .= drupal_get_form('simple_access_activate', $form);
   }
   else {
     drupal_set_title(t('Deactivate Simple Access'));
-    //$group .= form_submit(t('Deactivate'));
     $form[] = array(
       '#type' => 'submit',
       '#value' => t('Deactivate'),
       '#prefix' => t("<p>Before deactivating simple_access.module, you'll need to click this button in order to remove the simple_access grants from the database. If you do not do this, all of your nodes will become invisible to anyone but administators when you deactivate the module.</p><p><strong>Do this only when you want to deactivate the module.</strong></p>")
     );
-    //$output .= form(form_group('', $group));
     $output .= drupal_get_form('simple_access_deactivate', $form);
   }
-  //print theme('page', $output);
   return $output;
+}
+
+function simple_access_deactivate_confirm_submit($form_id, $form_values) {
+  simple_access_initialize(FALSE);
+  return 'admin/access/simple_access/setup';
 }
 
 function simple_access_group_form($gid = NULL) {
@@ -604,7 +600,7 @@ function simple_access_initialize($initialize = TRUE) {
     // re-enable universal view grant
     db_query('INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (0, 0, "all", 1, 0, 0)');
     variable_set('simple_access_active', FALSE);
-    drupal_set_message(t('The database has been re-configured. You should now visit %modules to disable the simple_access module itself.', array('%modules', l('the modules page', 'admin/modules'))));
+    drupal_set_message(t('The database has been re-configured. You should now visit %modules to disable the simple_access module itself.', array('%modules' => l('the modules page', 'admin/modules'))));
   }
 }
 
