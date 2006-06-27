@@ -11,20 +11,11 @@ INSTALLATION
 1. Place the entire simple_access directory into your Drupal modules/
    directory.
 
-2. Load the database definition file (simple_access.mysql) using the
-   tool of your choice (e.g. phpmyadmin). For mysql and command line
-   access use:
-
-     mysql -u user -p drupal < simple_access.mysql
-
-   Replace 'user' with the MySQL username, and 'drupal' with the
-   database being used.
-
-3. Enable this module by navigating to:
+2. Enable this module by navigating to:
 
      administer > modules
 
-4. After enabling this module in the previous step, navigate to
+3. After enabling this module in the previous step, navigate to
 
      administer > access control > simple access
 
