@@ -563,7 +563,7 @@ function simple_access_groups_from_roles($roles) {
 
 function simple_access_save_group($edit) {
   if (!$edit['gid']) {
-    $edit['gid'] = db_next_id('{simple_access}_gid');
+    $edit['gid'] = db_next_id('{simple_access_groups}_gid');
   }
   db_query('DELETE FROM {simple_access_roles} WHERE gid = %d', $edit['gid']);
   db_query('DELETE FROM {simple_access_groups} WHERE gid = %d', $edit['gid']);
@@ -588,7 +588,7 @@ function simple_access_delete_group($gid) {
 function simple_access_initialize($initialize = TRUE) {
   if ($initialize) {
     // delete universal view grant
-    db_query('DELETE FROM {node_access} WHERE nid = 0 AND realm = "all"');
+    db_query("DELETE FROM {node_access} WHERE nid = 0 AND realm = 'all'");
     // set all nodes to viewable
     db_query("INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) SELECT nid, 0, 'simple_access', 1, 0, 0 FROM {node}");
     variable_set('simple_access_active', TRUE);
@@ -596,9 +596,9 @@ function simple_access_initialize($initialize = TRUE) {
   }
   else {
     // delete all simple_access stuff
-    db_query('DELETE FROM {node_access} WHERE realm = "simple_access"');
+    db_query("DELETE FROM {node_access} WHERE realm = 'simple_access'");
     // re-enable universal view grant
-    db_query('INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (0, 0, "all", 1, 0, 0)');
+    db_query("INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (0, 0, 'all', 1, 0, 0)");
     variable_set('simple_access_active', FALSE);
     drupal_set_message(t('The database has been re-configured. You should now visit %modules to disable the simple_access module itself.', array('%modules' => l('the modules page', 'admin/modules'))));
   }
@@ -615,18 +615,18 @@ function simple_access_nodes() {
     case 'edit' :
       drupal_set_title(t('Items With Edit Access Set'));
       $output = '<div>'.t('These nodes have been set as "additionally editable by" certain Simple Access <a href="$url">groups</a>. ', array('%url' => url('admin/access/simple_access'))).'</div><br />';
-      $sql = 'SELECT DISTINCT n.title, na.nid FROM {node} n INNER JOIN {node_access} na ON n.nid = na.nid WHERE na.realm="simple_access" AND na.gid > 0 AND na.grant_update = 1';
+      $sql = "SELECT DISTINCT n.title, na.nid FROM {node} n INNER JOIN {node_access} na ON n.nid = na.nid WHERE na.realm='simple_access' AND na.gid > 0 AND na.grant_update = 1";
       break;
     case 'delete' :
       drupal_set_title(t('Items With Delete Access Set'));
       $output = '<div>'.t('These nodes have been set as "additionally deletable by" certain Simple Access <a href="%url">groups</a>. ', array('%url' => url('admin/access/simple_access'))).'</div><br />';
-      $sql = 'SELECT DISTINCT n.title, na.nid FROM {node} n INNER JOIN {node_access} na ON n.nid = na.nid WHERE na.realm="simple_access" AND na.gid > 0 AND na.grant_delete = 1';
+      $sql = "SELECT DISTINCT n.title, na.nid FROM {node} n INNER JOIN {node_access} na ON n.nid = na.nid WHERE na.realm='simple_access' AND na.gid > 0 AND na.grant_delete = 1";
       break;
     case 'view' :
     default :
       drupal_set_title(t('Items With View Access Set'));
       $output = '<div>'.t('These nodes have been set as "only viewable by" certain Simple Access <a href="%url">groups</a>.', array('%url' => url('admin/access/simple_access'))).'</div><br />';
-      $sql = 'SELECT DISTINCT n.title, na.nid FROM {node} n INNER JOIN {node_access} na ON n.nid = na.nid WHERE na.realm="simple_access" AND na.gid > 0 AND na.grant_view = 1';
+      $sql = "SELECT DISTINCT n.title, na.nid FROM {node} n INNER JOIN {node_access} na ON n.nid = na.nid WHERE na.realm='simple_access' AND na.gid > 0 AND na.grant_view = 1";
       break;
   }
   $header = array(
