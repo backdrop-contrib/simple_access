@@ -23,9 +23,7 @@
  */
 function simple_access_help($section) {
   switch ($section) {
-    case 'admin/modules#description':
-      return t('Provides simple hide/view access for nodes. After enabling this module and <strong>before disabling this module</strong>, visit %link to configure the database.', array('%link'=>l('admin/access/simple_access/setup', 'admin/access/simple_access/setup')));
-    case 'admin/access/simple_access':
+    case 'admin/user/simple_access':
       return t('');
   }
 }
@@ -33,21 +31,91 @@ function simple_access_help($section) {
 function simple_access_menu($may_cache) {
   $access = user_access('manage simple access');
   if ($may_cache) {
-    $items[] = array('path'=>'admin/access/simple_access', 'title'=>t('simple access'), 'access'=>$access, 'callback'=>'simple_access_page','type'=>MENU_LOCAL_TASK);
-    $items[] = array('path'=>'admin/access/simple_access/list', 'title'=>t('list'),  'access'=>$access, 'type'=>MENU_DEFAULT_LOCAL_TASK, 'weight'=>-8);
-    $items[] = array('path'=>'admin/access/simple_access/add', 'title'=>t('add group'), 'callback'=>'simple_access_group_form', 'access'=>$access, 'type'=>MENU_LOCAL_TASK, 'weight'=>-6);
-    $items[] = array('path'=>'admin/access/simple_access/settings', 'title'=>t('settings'), 'callback'=>'simple_access_settings_page', 'access'=>$access, 'type'=>MENU_LOCAL_TASK, 'weight'=>-4);
+    $items[] = array(
+      'path' => 'admin/user/simple_access', 
+      'title' => t('Simple Access'), 
+      'access' => $access, 
+      'callback' => 'simple_access_page_overview',
+      'type' => MENU_NORMAL_ITEM,
+      'description' => t('Update description'),
+    );
+    $items[] = array(
+      'path' => 'admin/user/simple_access/list', 
+      'title' => t('List'),  
+      'access' => $access, 
+      'type' => MENU_DEFAULT_LOCAL_TASK, 
+      'weight' => -8
+    );
+    $items[] = array(
+      'path' => 'admin/user/simple_access/add', 
+      'title' => t('Add Group'), 
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('simple_access_group_form'),
+      'access' => $access, 
+      'type' => MENU_LOCAL_TASK, 
+      'weight' => -6
+    );
+    $items[] = array(
+      'path' => 'admin/user/simple_access/edit', 
+      'title' => t('Edit Group'), 
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('simple_access_group_form'),
+      'access' => $access, 
+      'type' => MENU_CALLBACK, 
+      'weight' => -6
+    );
+    $items[] = array(
+      'path' => 'admin/settings/settings', 
+      'title' => t('Simple Access'), 
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('simple_access_settings_page'), 
+      'access' => $access, 
+      'type' => MENU_NORMAL_ITEM, 
+      'description' => t('Configure user access to parameters.'),
+    );
 
-    $items[] = array('path'=>'admin/node/simple_access', 'title'=>t('access'), 'access' => user_access('administer nodes'), 'callback'=>'simple_access_nodes', 'type'=>MENU_LOCAL_TASK, 'weight'=>2);
-    $items[] = array('path'=>'admin/node/simple_access/view', 'title'=>t('view'), 'callback'=>'simple_access_nodes', 'access' => user_access('administer nodes'), 'type'=>MENU_DEFAULT_LOCAL_TASK, 'weight'=>-5);
-    $items[] = array('path'=>'admin/node/simple_access/edit', 'title'=>t('edit'), 'callback'=>'simple_access_nodes', 'access' => user_access('administer nodes'), 'type'=>MENU_LOCAL_TASK, 'weight'=>-4);
-    $items[] = array('path'=>'admin/node/simple_access/delete', 'title'=>t('delete'), 'callback'=>'simple_access_nodes', 'access' => user_access('administer nodes'), 'type'=>MENU_LOCAL_TASK, 'weight'=>-3);
-
+    $items[] = array(
+      'path' => 'admin/content/simple_access', 
+      'title' => t('Simple Access'), 
+      'access' => user_access('administer nodes'), 
+      'callback' => 'simple_access_nodes', 
+      'type' => MENU_NORMAL_ITEM, 
+      'description' => t('View node access which has been set up via Simple Access'),
+    );
+    $items[] = array(
+      'path' => 'admin/content/simple_access/view', 
+      'title' => t('View'), 
+      'callback' => 'simple_access_nodes', 
+      'access' => user_access('administer nodes'), 
+      'type' => MENU_DEFAULT_LOCAL_TASK, 'weight'=>-5
+    );
+    $items[] = array(
+      'path' => 'admin/content/simple_access/edit', 
+      'title' => t('Edit Access'), 
+      'callback' => 'simple_access_nodes', 
+      'access' => user_access('administer nodes'), 
+      'type' => MENU_CALLBACK, 
+      'weight' => -4
+    );
+    $items[] = array(
+      'path' => 'admin/content/simple_access/delete', 
+      'title' => t('Delete Access'), 
+      'callback' => 'simple_access_nodes', 
+      'access' => user_access('administer nodes'), 
+      'type' => MENU_CALLBACK, 
+      'weight' => -3
+    );
   }
-  else {
-    $items[] = array('path'=>'admin/access/simple_access/setup', 'title'=>variable_get('simple_access_active', FALSE) ? t('deactivate') : t('setup'), 'callback'=>'simple_access_setup_page', 'access'=>$access, 'type'=>MENU_LOCAL_TASK, 'weight'=>8);
-
-  }
+  /* else {
+    $items[] = array(
+      'path' => 'admin/user/simple_access/setup', 
+      'title' => variable_get('simple_access_active', FALSE) ? t('deactivate') : t('setup'), 
+      'callback' => 'simple_access_setup_page', 
+      'access' => $access, 
+      'type' => MENU_LOCAL_TASK, 
+      'weight' => 8
+    ); 
+  } */
   return $items;
 }
 
@@ -101,7 +169,6 @@ function simple_access_nodeapi(&$node, $op, $arg = 0) {
         $views = FALSE;
         // loop through simple_access arrays from page submission
         // $type is either 'view', 'update', or 'delete'
-        //var_dump($node->simple_access);
         foreach((array)$node->simple_access as $type => $array) {
           // loop through each checkbox of the group
           foreach((array)$array['checks'] as $gid => $checked) {
@@ -154,7 +221,7 @@ function simple_access_form_alter($form_id, &$form){
 function simple_access_form($node){
   if (user_access('assign access to nodes') || user_access('administer nodes')){
     //include the css
-    theme_add_style(drupal_get_path('module', 'simple_access') .'/simple_access.css');
+    drupal_add_css(drupal_get_path('module', 'simple_access') .'/simple_access.css');
     
     // set up the outer fieldset
       $form['simple_access'] = array(
@@ -166,7 +233,7 @@ function simple_access_form($node){
         '#weight' => 5
       );
 
-    if (variable_get('simple_access_active', FALSE)) {
+    //if (variable_get('simple_access_active', FALSE)) {
       if (!isset($node->simple_access)) {
         // Load the grants from the database.
         $result = db_query('SELECT na.gid, na.grant_view, na.grant_update, na.grant_delete FROM {node_access} na WHERE na.nid = %d AND na.realm = \'simple_access\'', $node->nid);
@@ -235,10 +302,9 @@ function simple_access_form($node){
           else {
             $form['simple_access'][$key][] = array(
               '#type' => 'markup',
-              '#value' => t('No <a href="%url">access groups</a> have been defined', array('%url' => url('admin/access/simple_access')))
+              '#value' => t('No <a href="!url">access groups</a> have been defined', array('!url' => url('admin/user/simple_access')))
             );
           }
-          //$output .= form_group(t('Only viewable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = viewable by all.').'</span>');
         }
       }
       // stick in a div to keep the floats working right
@@ -262,7 +328,7 @@ function simple_access_form($node){
         else {
           $form['simple_access']['update'] = array(
             '#type' => 'markup',
-            '#value' => t('No <a href="%url">access groups</a> have been defined', array('%url', url('admin/access/simple_access')))
+            '#value' => t('No <a href="!url">access groups</a> have been defined', array('!url', url('admin/user/simple_access')))
           );
         }
         //$output .= form_group(t('Additionally editable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = normal behavior<br />(author and admins can edit).').'</span>');
@@ -287,7 +353,7 @@ function simple_access_form($node){
         else {
           $form['simple_access']['delete'] = array(
             '#type' => 'markup',
-            '#value' => t('No <a href="%url">access groups</a> have been defined', array('%url', url('admin/access/simple_access')))
+            '#value' => t('No <a href="!url">access groups</a> have been defined', array('!url', url('admin/user/simple_access')))
           );
         }
         //$output .= form_group(t('Additionally deletable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = normal behavior<br />(author and admins can delete).').'</span>');
@@ -300,21 +366,19 @@ function simple_access_form($node){
     }
     else {
       // module is enabled, but database hasn't been configured
-      //$output = form_group(t('Simple Access'), t('Simple Access needs to configure the database before use. Please go to %link to set it up.', array('%link'=>l('admin/access/simple_access/setup', 'admin/access/simple_access/setup'))));
+      //$output = form_group(t('Simple Access'), t('Simple Access needs to configure the database before use. Please go to !link to set it up.', array('!link'=>l('admin/access/simple_access/setup', 'admin/access/simple_access/setup'))));
       $form['simple_access'] = array(
         '#type' => 'markup',
-        '#value' => t('Simple Access needs to configure the database before use. Please go to %link to set it up.', array('%link'=>l('admin/access/simple_access/setup', 'admin/access/simple_access/setup')))
+        '#value' => t('Simple Access needs to configure the database before use. Please go to !link to set it up.', array('!link'=>l('admin/access/simple_access/setup', 'admin/access/simple_access/setup')))
       );
       */
-    }
+    /* }
     else {
       $form['simple_access']['error'] = array(
         '#type' => 'markup',
-        '#value' => '<p>'.t('Simple Access needs to configure the database before use. Please go to %link to set it up.', array('%link'=>l('admin/access/simple_access/setup', 'admin/access/simple_access/setup'))).'</p>'
+        '#value' => '<p>'.t('Simple Access needs to configure the database before use. Please go to !link to set it up.', array('!link'=>l('admin/access/simple_access/setup', 'admin/access/simple_access/setup'))).'</p>'
       );
-    }
-    //return drupal_get_form('simple_access_node', $form);
-    //var_dump($form);
+    } */
 
     return $form;
   }
@@ -322,11 +386,10 @@ function simple_access_form($node){
 
 function simple_access_page($op = NULL, $gid = NULL) {
   if ($_POST['op'] == t('Submit')) {
-    simple_access_save_group($_POST['edit']);
   }
   elseif ($_POST['edit']['confirm']) {
     simple_access_delete_group($_POST['edit']['gid']);
-    drupal_goto('admin/access/simple_access');
+    drupal_goto('admin/user/simple_access');
     return;
   }
   switch ($op) {
@@ -337,42 +400,44 @@ function simple_access_page($op = NULL, $gid = NULL) {
         '#value' => $gid
       );
       //$output = theme('confirm', t('Are you sure you want to delete this group?'), 'admin/access/simple_access', NULL, NULL, NULL, $hidden);
-      $output = confirm_form('simple_access_delete_group', $form, t('Are you sure you want to delete this group?'), 'admin/access/simple_access');
+      $output = confirm_form('simple_access_delete_group', $form, t('Are you sure you want to delete this group?'), 'admin/user/simple_access');
       break;
     case 'edit':
       return simple_access_group_form($gid);
       break;
     default:
-      if (!variable_get('simple_access_active', FALSE)) {
-        drupal_set_message(t('Fire it up first.'));
-        drupal_goto('admin/access/simple_access/setup');
-      }
-      if (count($rg = simple_access_get_groups())) {
-        drupal_set_title(t('Access Groups'));
-        $header = array(t('Group'), t('Roles'), t('Operations'));
-        $roles = user_roles();
-        foreach ($rg as $g) {
-          $gid = $g['gid'];
-          $rows[$gid]['group'] = $g['name'];
-          $r = array();
-          foreach($g['roles'] as $rid) {
-            $r[] = $roles[$rid];
-          }
-          $rows[$gid]['roles'] = "<span style='font-size:xx-small'>".implode(', ', $r)."</span>";
-          $rows[$gid]['ops'] = l('edit', 'admin/access/simple_access/edit/'.$gid). '&nbsp;'. l('delete', 'admin/access/simple_access/delete/'.$gid);
-        }
-        $output .= theme('table', $header, $rows, array('style'=>'width:100%'));
-        $output .= '<br />'.l(t('add another access group'), 'admin/access/simple_access/add');
-
-
-      }
-      else {
-        drupal_set_message(t('You have not yet defined any access groups.'));
-        drupal_goto('admin/access/simple_access/add');
-      }
   }
   //print theme('page', $output);
   return $output;
+}
+
+function simple_access_page_overview() {
+  /* if (!variable_get('simple_access_active', FALSE)) {
+    drupal_set_message(t('Fire it up first.'));
+    drupal_goto('admin/access/simple_access/setup');
+  } */
+  if (count($rg = simple_access_get_groups())) {
+    drupal_set_title(t('Access Groups'));
+    $header = array(t('Group'), t('Roles'), t('Operations'));
+    $roles = user_roles();
+    foreach ($rg as $g) {
+      $gid = $g['gid'];
+      $rows[$gid]['group'] = $g['name'];
+      $r = array();
+      foreach($g['roles'] as $rid) {
+        $r[] = $roles[$rid];
+      }
+      $rows[$gid]['roles'] = "<span style='font-size:xx-small'>".implode(', ', $r)."</span>";
+      $rows[$gid]['ops'] = l('edit', 'admin/user/simple_access/edit/'.$gid). '&nbsp;'. l('delete', 'admin/user/simple_access/delete/'.$gid);
+    }
+    $output .= theme('table', $header, $rows, array('style'=>'width:100%'));
+    $output .= '<br />'.l(t('add another access group'), 'admin/user/simple_access/add');
+    return $output;
+  }
+  else {
+    drupal_set_message(t('You have not yet defined any access groups.'));
+    drupal_goto('admin/user/simple_access/add');
+  }
 }
 
 function simple_access_settings_page() {
@@ -394,17 +459,7 @@ function simple_access_settings_page() {
     '#description' => t('Which options should appear on node add/edit pages for administrators? Select at least one.'),
     '#required' => TRUE
   );
-  $form['op'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save Options')
-  );
-  //$output .= drupal_get_form('simple_access_settings', $form);
-  //$form .= form_checkboxes(t('Display'), 'sa_display', variable_get('sa_display', array('view')), $options, t('Which options should appear on node add/edit pages for administrators? Select at least one.'), NULL, TRUE);
-  //$form .= form_submit(t('Save Options'));
-  //$output .= form($form);
-  //print theme('page', $output);
-  $output = drupal_get_form('simple_access_settings', $form);
-  return $output;
+  return system_settings_form($form);
 }
 
 function simple_access_setup_page() {
@@ -449,7 +504,6 @@ function simple_access_group_form($gid = NULL) {
     $name = $group->name;
     $weight = $group->weight;
     $roles = simple_access_get_roles($gid);
-    //$form .= form_hidden('gid', $gid);
     $form['gid'] = array(
       '#type' => 'hidden',
       '#value' => $gid
@@ -459,7 +513,6 @@ function simple_access_group_form($gid = NULL) {
     drupal_set_title(t('Create Access Group'));
     $weight = 0;
   }
-  //$form .= form_textfield(t('Name'), 'name', $name, 40, 80, t('The name for the access group as it will appear on the content editing form.'), $attributes = NULL, TRUE);
   $form['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Name'),
@@ -470,7 +523,6 @@ function simple_access_group_form($gid = NULL) {
     '#attributes' => $attributes = NULL,
     '#required' => TRUE
   );
-  //$form .= form_checkboxes(t('Roles'), 'roles', $roles, user_roles(),   t('Roles that can view'));
   $form['roles'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Roles'),
@@ -478,7 +530,6 @@ function simple_access_group_form($gid = NULL) {
     '#options' => user_roles(),
     '#description' => t('Roles that can view')
   );
-  //$form .= form_weight('Weight', 'weight', $weight, 10, t('When setting permissions, heavier names will sink and lighter names will be positioned nearer the top.'));
   $form['weight'] = array(
     '#type' => 'weight',
     '#title' => 'Weight',
@@ -486,17 +537,16 @@ function simple_access_group_form($gid = NULL) {
     '#delta' => 10,
     '#description' => t('When setting permissions, heavier names will sink and lighter names will be positioned nearer the top.')
   );
-  //$form .= ($gid) ? form_submit(t('Submit')) : form_submit(t('Submit'));
   $form[] = array(
     '#type' => 'submit',
     '#value' => t('Submit')
   );
-  //$output = form($form, 'post', url('admin/access/simple_access'));
-  $form['#method'] = 'post';
-  $form['#action'] = url('admin/access/simple_access');
-  $output = drupal_get_form('simple_access_group_edit', $form);
-  //print theme('page', $output);
-  return $output;
+  return $form;
+}
+
+function simple_access_group_form_submit($form_id, $form_values) {
+  simple_access_save_group($form_values);
+  return 'admin/user/simple_access';
 }
 
 function simple_access_get_roles($gid) {
@@ -570,8 +620,10 @@ function simple_access_save_group($edit) {
   $success = TRUE;
   $success = $success && db_query("INSERT INTO {simple_access_groups} (gid, name, weight) VALUES (%d, '%s', %d)", $edit['gid'], $edit['name'], $edit['weight']);
   if (is_array($edit['roles'])) {
-    foreach($edit['roles'] as $key=>$value) {
-      $success = $success && db_query('INSERT INTO {simple_access_roles} (rid, gid) VALUES (%d, %d)', $key, $edit['gid']);
+    foreach($edit['roles'] as $key => $value) {
+      if ($value) {
+        $success = $success && db_query('INSERT INTO {simple_access_roles} (rid, gid) VALUES (%d, %d)', $key, $edit['gid']);
+      }
     }
   }
   if (!$success) {
@@ -614,18 +666,18 @@ function simple_access_nodes() {
   switch(arg(3)) {
     case 'edit' :
       drupal_set_title(t('Items With Edit Access Set'));
-      $output = '<div>'.t('These nodes have been set as "additionally editable by" certain Simple Access <a href="$url">groups</a>. ', array('%url' => url('admin/access/simple_access'))).'</div><br />';
+      $output = '<div>'.t('These nodes have been set as "additionally editable by" certain Simple Access <a href="!url">groups</a>. ', array('!url' => url('admin/user/simple_access'))).'</div><br />';
       $sql = "SELECT DISTINCT n.title, na.nid FROM {node} n INNER JOIN {node_access} na ON n.nid = na.nid WHERE na.realm='simple_access' AND na.gid > 0 AND na.grant_update = 1";
       break;
     case 'delete' :
       drupal_set_title(t('Items With Delete Access Set'));
-      $output = '<div>'.t('These nodes have been set as "additionally deletable by" certain Simple Access <a href="%url">groups</a>. ', array('%url' => url('admin/access/simple_access'))).'</div><br />';
+      $output = '<div>'.t('These nodes have been set as "additionally deletable by" certain Simple Access <a href="!url">groups</a>. ', array('!url' => url('admin/user/simple_access'))).'</div><br />';
       $sql = "SELECT DISTINCT n.title, na.nid FROM {node} n INNER JOIN {node_access} na ON n.nid = na.nid WHERE na.realm='simple_access' AND na.gid > 0 AND na.grant_delete = 1";
       break;
     case 'view' :
     default :
       drupal_set_title(t('Items With View Access Set'));
-      $output = '<div>'.t('These nodes have been set as "only viewable by" certain Simple Access <a href="%url">groups</a>.', array('%url' => url('admin/access/simple_access'))).'</div><br />';
+      $output = '<div>'.t('These nodes have been set as "only viewable by" certain Simple Access <a href="!url">groups</a>.', array('!url' => url('admin/user/simple_access'))).'</div><br />';
       $sql = "SELECT DISTINCT n.title, na.nid FROM {node} n INNER JOIN {node_access} na ON n.nid = na.nid WHERE na.realm='simple_access' AND na.gid > 0 AND na.grant_view = 1";
       break;
   }
