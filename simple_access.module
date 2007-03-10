@@ -4,209 +4,188 @@
 
 /**
  * @file
- * This module allows node administrators to make nodes viewable by specific
+ * This module allows administrators to make nodes viewable by specific
  * 'access groups'. Each access group can contain any number of roles.
  * If a node is not assigned to any access groups, it will remain viewable by
  * all users.
  *
  * Database definition:
  * @code
-
-
-
  * @endcode
  *
  */
 
 /**
- * Implementation of hook_help().
+ * Implementation of hook_menu().
  */
-function simple_access_help($section) {
-  switch ($section) {
-    case 'admin/user/simple_access':
-      return t('');
-  }
-}
-
 function simple_access_menu($may_cache) {
   $access = user_access('manage simple access');
   if ($may_cache) {
     $items[] = array(
-      'path' => 'admin/user/simple_access', 
-      'title' => t('Simple Access'), 
-      'access' => $access, 
+      'path' => 'admin/user/simple_access',
+      'title' => t('Simple Access'),
+      'access' => $access,
       'callback' => 'simple_access_page_overview',
       'type' => MENU_NORMAL_ITEM,
-      'description' => t('Update description'),
+      'description' => t('Manage groups of users for node-specific access control.'),
     );
     $items[] = array(
-      'path' => 'admin/user/simple_access/list', 
-      'title' => t('List'),  
-      'access' => $access, 
-      'type' => MENU_DEFAULT_LOCAL_TASK, 
-      'weight' => -8
+      'path' => 'admin/user/simple_access/list',
+      'title' => t('List'),
+      'access' => $access,
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => -8,
     );
     $items[] = array(
-      'path' => 'admin/user/simple_access/add', 
-      'title' => t('Add Group'), 
+      'path' => 'admin/user/simple_access/add',
+      'title' => t('Add Group'),
       'callback' => 'drupal_get_form',
       'callback arguments' => array('simple_access_group_form'),
-      'access' => $access, 
-      'type' => MENU_LOCAL_TASK, 
-      'weight' => -6
+      'access' => $access,
+      'type' => MENU_LOCAL_TASK,
+      'weight' => -6,
     );
     $items[] = array(
-      'path' => 'admin/user/simple_access/edit', 
-      'title' => t('Edit Group'), 
+      'path' => 'admin/user/simple_access/edit',
+      'title' => t('Edit Group'),
       'callback' => 'drupal_get_form',
       'callback arguments' => array('simple_access_group_form'),
-      'access' => $access, 
-      'type' => MENU_CALLBACK, 
-      'weight' => -6
+      'access' => $access,
+      'type' => MENU_CALLBACK,
     );
     $items[] = array(
-      'path' => 'admin/settings/settings', 
-      'title' => t('Simple Access'), 
+      'path' => 'admin/user/simple_access/delete',
+      'title' => t('Delete Group'),
       'callback' => 'drupal_get_form',
-      'callback arguments' => array('simple_access_settings_page'), 
-      'access' => $access, 
-      'type' => MENU_NORMAL_ITEM, 
-      'description' => t('Configure user access to parameters.'),
+      'callback arguments' => array('simple_access_delete_group_confirm'),
+      'access' => $access,
+      'type' => MENU_CALLBACK,
+    );
+    $items[] = array(
+      'path' => 'admin/settings/simple_access',
+      'title' => t('Simple Access'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('simple_access_settings_page'),
+      'access' => $access,
+      'type' => MENU_NORMAL_ITEM,
+      'description' => t('Configure which kinds of access (view, edit, delete) users with permission to use Simple Access can define for each node.'),
     );
 
     $items[] = array(
-      'path' => 'admin/content/simple_access', 
-      'title' => t('Simple Access'), 
-      'access' => user_access('administer nodes'), 
-      'callback' => 'simple_access_nodes', 
-      'type' => MENU_NORMAL_ITEM, 
-      'description' => t('View node access which has been set up via Simple Access'),
+      'path' => 'admin/content/simple_access',
+      'title' => t('Simple Access'),
+      'access' => user_access('administer nodes'),
+      'callback' => 'simple_access_nodes',
+      'type' => MENU_NORMAL_ITEM,
+      'description' => t('View node access which has been set up via Simple Access.'),
     );
     $items[] = array(
-      'path' => 'admin/content/simple_access/view', 
-      'title' => t('View'), 
-      'callback' => 'simple_access_nodes', 
-      'access' => user_access('administer nodes'), 
-      'type' => MENU_DEFAULT_LOCAL_TASK, 'weight'=>-5
+      'path' => 'admin/content/simple_access/view',
+      'title' => t('View'),
+      'callback' => 'simple_access_nodes',
+      'access' => user_access('administer nodes'),
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => -5,
     );
     $items[] = array(
-      'path' => 'admin/content/simple_access/edit', 
-      'title' => t('Edit Access'), 
-      'callback' => 'simple_access_nodes', 
-      'access' => user_access('administer nodes'), 
-      'type' => MENU_CALLBACK, 
-      'weight' => -4
+      'path' => 'admin/content/simple_access/edit',
+      'title' => t('Edit Access'),
+      'callback' => 'simple_access_nodes',
+      'access' => user_access('administer nodes'),
+      'type' => MENU_CALLBACK,
+      'weight' => -4,
     );
     $items[] = array(
-      'path' => 'admin/content/simple_access/delete', 
-      'title' => t('Delete Access'), 
-      'callback' => 'simple_access_nodes', 
-      'access' => user_access('administer nodes'), 
-      'type' => MENU_CALLBACK, 
-      'weight' => -3
+      'path' => 'admin/content/simple_access/delete',
+      'title' => t('Delete Access'),
+      'callback' => 'simple_access_nodes',
+      'access' => user_access('administer nodes'),
+      'type' => MENU_CALLBACK,
+      'weight' => -3,
     );
   }
-  /* else {
-    $items[] = array(
-      'path' => 'admin/user/simple_access/setup', 
-      'title' => variable_get('simple_access_active', FALSE) ? t('deactivate') : t('setup'), 
-      'callback' => 'simple_access_setup_page', 
-      'access' => $access, 
-      'type' => MENU_LOCAL_TASK, 
-      'weight' => 8
-    ); 
-  } */
   return $items;
 }
 
-
 /**
  * Implementation of hook_perm().
- *
  */
 function simple_access_perm() {
   return array('manage simple access', 'assign access to nodes');
 }
 
 /**
- * Implementation of hook_node_grants().
- *
- *
+ * Implementation of hook_node_access_records
  */
-function simple_access_node_grants($account, $op) {
-  $grants = array();
-  switch ($op) {
-    case 'view':
-      if (user_access('access content', $account)) {
-        $grants[] = 0;
+function simple_access_node_access_records($node)
+{
+  $records = array();
+
+  if ($node->simple_access) {
+    // loop through simple_access arrays from page submission
+    // $type is either 'view', 'update', or 'delete'
+
+    foreach((array)$node->simple_access as $type => $array) {
+      // loop through each checkbox of the group
+      foreach((array)$array['checks'] as $gid => $checked) {
+        // make an array of all grants for node
+        if($checked){
+          $sa_grants[$gid][$type] = true;
+          if ($type == 'view') {
+            // if we've gotten here, then one of
+            // the view boxes is checked so...
+            $views = TRUE;
+          }
+        }
       }
-    case 'update' :
-    case 'delete' :
-      if (isset($account->roles)) {
-        $grants = array_merge( $grants, simple_access_groups_from_roles( array_keys($account->roles) ));
+    }
+    // Because the UI is organized by access rather than GID, we need to
+    // reorganize the array by realm/GID
+    if ($sa_grants) {
+      foreach($sa_grants as $gid => $access) {
+        $records[] = array(
+          'realm' => 'simple_access',
+          'gid' => $gid,
+          'grant_view' => $access['view'],
+          'grant_update' => $access['update'],
+          'grant_delete' => $access['delete'],
+          'priority' => 1,
+        );
       }
-    return array('simple_access' => $grants);
+    }
   }
+  // if there are new view recrods set
+  if (!$views) {
+    $records[] = array(
+      'realm' => 'simple_access',
+      'gid' => 0,
+      'grant_view' => 1,
+      'grant_update' => 0,
+      'grant_update' => 0,
+      'priority' => 1,
+    );
+  }
+  $records[] = array(
+    'realm' => 'simple_access_author',
+    'gid' => $node->uid,
+    'grant_view' => user_access('access content'),
+    'grant_update' => user_access('access content'),
+    'grant_delete' => user_access('access content'),
+    'priority' => 0,
+  );
+  return $records;
 }
 
 /**
- * Implementation of hook_nodeapi().
+ * Implementation of hook_node_grants().
  *
+ *  @TODO implement to correcly return groups in all cases.
  */
-function simple_access_nodeapi(&$node, $op, $arg = 0) {
-  switch ($op) {
-    case 'delete':
-      // When a node is deleted, delete any relevant grants.
-      db_query('DELETE FROM {node_access} WHERE nid = %d AND realm = \'simple_access\'', $node->nid);
-      break;
-    case 'insert':
-    case 'update':
-      // if user doesn't have administer nodes permission, then the simple_access
-      // boxes weren't on the page... so don't parse what ain't there! (see 'else')
-      if (user_access('assign access to nodes')) {
-        // Clear out any existing grants for the node. Don't worry, we'll set them again.
-        db_query('DELETE FROM {node_access} WHERE nid = %d AND realm = \'simple_access\'', $node->nid);
-        $views = FALSE;
-        // loop through simple_access arrays from page submission
-        // $type is either 'view', 'update', or 'delete'
-        foreach((array)$node->simple_access as $type => $array) {
-          // loop through each checkbox of the group
-          foreach((array)$array['checks'] as $gid => $checked) {
-            // make an array of all grants for node
-            if($checked){
-              $grants[$gid][$type] = 1;
-              if ($type == 'view') {
-                // if we've gotten here, then one of
-                // the view boxes is checked so...
-                $views = TRUE;
-              }
-            }
-          }
-        }
-        if (!$views) {
-          // if no 'view' access groups are selected,
-          // set public view grant for node
-          $grants[0]['view'] = 1;
-          // there may be modules that let the public edit and delete nodes, but this isn't one of 'em. So....
-          $grants[0]['update'] = 0;
-          $grants[0]['delete'] = 0;
-        }
-
-        // this next line is wrong! Where is $gid coming from?
-        foreach($grants as $gid => $gidgrants) {
-          db_query("INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (%d, %d, 'simple_access', %d, %d, %d)", $node->nid, $gid, $gidgrants['view'], $gidgrants['update'], $gidgrants['delete']);
-        }
-      }
-      else {
-        // the user is not an administrator
-        // so does the node already have some access permissions?
-        if (!db_result(db_query("SELECT nid FROM {node_access} WHERE nid = %d AND realm = 'simple_access'", $node->nid))) {
-          // if not set it up for everyone to view...
-          db_query("INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (%d, %d, 'simple_access', %d, %d, %d)", $node->nid, 0, 1, 0, 0);
-        }
-      }
-      break;
-  }
+function simple_access_node_grants($account, $op) {
+  $gids = simple_access_groups_from_roles( array_keys($account->roles));
+  $grants['simple_access'] = $gids;
+  $grants['simple_access_author'] = array($account->uid);
+  return $grants;
 }
 
 function simple_access_form_alter($form_id, &$form){
@@ -222,200 +201,122 @@ function simple_access_form($node){
   if (user_access('assign access to nodes') || user_access('administer nodes')){
     //include the css
     drupal_add_css(drupal_get_path('module', 'simple_access') .'/simple_access.css');
-    
     // set up the outer fieldset
-      $form['simple_access'] = array(
-        '#title' => t('Access'),
-        '#type' => 'fieldset',
-        '#collapsible' => true,
-        '#collapsed' => true,
-        '#tree' => true,
-        '#weight' => 5
-      );
+    $form['simple_access'] = array(
+      '#title' => t('Access'),
+      '#type' => 'fieldset',
+      '#collapsible' => true,
+      '#collapsed' => true,
+      '#tree' => true,
+      '#weight' => 5
+    );
 
-    //if (variable_get('simple_access_active', FALSE)) {
-      if (!isset($node->simple_access)) {
-        // Load the grants from the database.
-        $result = db_query('SELECT na.gid, na.grant_view, na.grant_update, na.grant_delete FROM {node_access} na WHERE na.nid = %d AND na.realm = \'simple_access\'', $node->nid);
-        while($grant = db_fetch_object($result)) {
-          if ($grant->gid > 0) {
-            if ($grant->grant_view) {
-              $views[$grant->gid] = $grant->gid;
-            }
-            if ($grant->grant_update) {
-              $updates[$grant->gid] = $grant->gid;
-            }
-            if ($grant->grant_delete) {
-              $deletes[$grant->gid] = $grant->gid;
-            }
+    if (!isset($node->simple_access)) {
+      // Load the grants from the database.
+      $result = db_query('SELECT na.gid, na.grant_view, na.grant_update, na.grant_delete FROM {node_access} na WHERE na.nid = %d AND na.realm = \'simple_access\'', $node->nid);
+      while($grant = db_fetch_object($result)) {
+        if ($grant->gid > 0) {
+          if ($grant->grant_view) {
+            $views[$grant->gid] = $grant->gid;
+          }
+          if ($grant->grant_update) {
+            $updates[$grant->gid] = $grant->gid;
+          }
+          if ($grant->grant_delete) {
+            $deletes[$grant->gid] = $grant->gid;
           }
         }
-        $node->simple_access = array(
-          'views' => $views,
-          'updates' => $updates,
-          'deletes' => $deletes
+      }
+      $node->simple_access = array(
+        'views' => $views,
+        'updates' => $updates,
+        'deletes' => $deletes
+      );
+    }
+
+    // See what form elements we should include. If not configured,
+    // only enable the 'view' elements by default.
+    $variable = variable_get('sa_display', array('view' => 1));
+    $count = count($variable) ? count($variable) : 1;
+    $percent = 90/$count;
+
+    // Get the array of checkbox options to use for each form element.  
+    // If the "Show groups even when user is not a member" setting is
+    // enabled, or if the current user has 'administer nodes', let
+    // them choose from any of the SA groups.
+    $options = simple_access_group_select(user_access('administer nodes') || variable_get('sa_showgroups', 0));
+
+    // This is the only stuff that changes for each
+    // so we put it all in one place for easy editing
+    $loop = array(
+      'view' => array(
+        'title' => t('Only viewable by'),
+        'description' => '<span style="font-size:xx-small">'. t('All unchecked = viewable by all.') .'</span>',
+        'default' => $views,
+      ),
+      'update' => array(
+        'title' => t('Additionally editable by'),
+        'description' => '<span style="font-size:xx-small">'. t('All unchecked = normal behavior<br />(author and admins can edit).') .'</span>',
+        'default' => $updates,
+      ),
+      'delete' => array(
+        'title' => t('Additionally deletable by'),
+        'description' => '<span style="font-size:xx-small">'. t('All unchecked = normal behavior<br />(author and admins can delete).') .'</span>',
+        'default' => $deletes,
+      ),
+    );
+    foreach($loop as $key => $vals) {
+      if ($variable[$key]) {
+        $form['simple_access'][$key] = array(
+          '#type' => 'fieldset',
+          '#title' => $vals['title'],
+          '#description' => $vals['description'],
+          '#attributes' => array('class' => 'sa-inline', 'style' => "width:$percent%"),
         );
-      }
-      $variable = variable_get('sa_display', array('view'));
-      $count = count($variable) ? count($variable) : 1;
-      $percent = 90/$count;
-
-      $options = simple_access_group_select(user_access('administer nodes'));
-
-      // this is the only stuff that changes for each
-      // so we put it all in one place for easy editing
-      $loop = array(
-        'view' => array(
-          'title' => t('Only viewable by'),
-          'description' => '<span style="font-size:xx-small">'.t('All unchecked = viewable by all.').'</span>',
-          'default' => $views,
-        ),
-        'update' => array(
-          'title' => t('Additionally editable by'),
-          'description' => '<span style="font-size:xx-small">'.t('All unchecked = normal behavior<br />(author and admins can edit).').'</span>',
-          'default' => $updates
-        ),
-        'delete' => array(
-          'title' => t('Additionally deletable by'),
-          'description' => '<span style="font-size:xx-small">'.t('All unchecked = normal behavior<br />(author and admins can delete).').'</span>',
-          'default' => $deletes
-        )
-      );
-
-      foreach($loop as $key => $vals) {
-        if (in_array($key, $variable)) {
-          $form['simple_access'][$key] = array(
-            '#type' => 'fieldset',
-            '#title' => $vals['title'],
-            '#description' => $vals['description'],
-            '#attributes' => array('class' => 'sa-inline', 'style' => "width:$percent%"),
-          );
-          if ($options) {
-            $form['simple_access'][$key]['checks'] = array(
-              '#type' => 'checkboxes',
-              '#title' => '',
-              '#default_value' => $vals['default'],
-              '#options' => $options
-              //'#tree' => false
-            );
-          }
-          else {
-            $form['simple_access'][$key][] = array(
-              '#type' => 'markup',
-              '#value' => t('No <a href="!url">access groups</a> have been defined', array('!url' => url('admin/user/simple_access')))
-            );
-          }
-        }
-      }
-      // stick in a div to keep the floats working right
-      $form['simple_access'][] = array(
-        '#type' => 'markup',
-        '#value' => '<div class="sa-after"></div>'
-      );
-
-      /*
-      // EDIT (a.k.a update) stuff ************************
-      if (in_array('update', $variable)) {
         if ($options) {
-          //$form = form_checkboxes('', 'simple_access][update', $updates, simple_access_group_select());
-          $form['simple_access']['update'] = array(
+          $form['simple_access'][$key]['checks'] = array(
             '#type' => 'checkboxes',
             '#title' => '',
-            '#default_value' => $updates,
-            '#options' => simple_access_group_select(),
+            '#default_value' => $vals['default'],
+            '#options' => $options
           );
         }
         else {
-          $form['simple_access']['update'] = array(
+          $form['simple_access'][$key][] = array(
             '#type' => 'markup',
-            '#value' => t('No <a href="!url">access groups</a> have been defined', array('!url', url('admin/user/simple_access')))
+            '#value' => t('No <a href="!url">access groups</a> have been defined', array('!url' => url('admin/user/simple_access')))
           );
         }
-        //$output .= form_group(t('Additionally editable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = normal behavior<br />(author and admins can edit).').'</span>');
-        $fieldset = array(
-          '#type' => 'fieldset',
-          '#title' => t('Additionally editable by'),
-          '#description' => '<span style="font-size:xx-small">'.t('All unchecked = normal behavior<br />(author and admins can edit).').'</span>',
-        );
-      }
-
-      // DELETE stuff *******************************
-      if (in_array('delete', $variable)) {
-        if ($options) {
-          //$form = form_checkboxes('', 'simple_access][delete', $deletes, simple_access_group_select());
-          $form['simple_access']['delete'] = array(
-            '#type' => 'checkboxes',
-            '#title' => '',
-            '#default_value' => $deletes,
-            '#options' => simple_access_group_select(),
-          );
-        }
-        else {
-          $form['simple_access']['delete'] = array(
-            '#type' => 'markup',
-            '#value' => t('No <a href="!url">access groups</a> have been defined', array('!url', url('admin/user/simple_access')))
-          );
-        }
-        //$output .= form_group(t('Additionally deletable by'), $form, '<span style="font-size:xx-small">'.t('All unchecked = normal behavior<br />(author and admins can delete).').'</span>');
-        $fieldset = array(
-          '#type' => 'fieldset',
-          '#title' => t('Additionally deletable by'),
-          '#description' => '<span style="font-size:xx-small">'.t('All unchecked = normal behavior<br />(author and admins can delete).').'</span>'
-        );
       }
     }
-    else {
-      // module is enabled, but database hasn't been configured
-      //$output = form_group(t('Simple Access'), t('Simple Access needs to configure the database before use. Please go to !link to set it up.', array('!link'=>l('admin/access/simple_access/setup', 'admin/access/simple_access/setup'))));
-      $form['simple_access'] = array(
-        '#type' => 'markup',
-        '#value' => t('Simple Access needs to configure the database before use. Please go to !link to set it up.', array('!link'=>l('admin/access/simple_access/setup', 'admin/access/simple_access/setup')))
-      );
-      */
-    /* }
-    else {
-      $form['simple_access']['error'] = array(
-        '#type' => 'markup',
-        '#value' => '<p>'.t('Simple Access needs to configure the database before use. Please go to !link to set it up.', array('!link'=>l('admin/access/simple_access/setup', 'admin/access/simple_access/setup'))).'</p>'
-      );
-    } */
-
+    // stick in a div to keep the floats working right
+    $form['simple_access'][] = array(
+      '#type' => 'markup',
+      '#value' => '<div class="sa-after"></div>'
+    );
     return $form;
   }
 }
 
-function simple_access_page($op = NULL, $gid = NULL) {
-  if ($_POST['op'] == t('Submit')) {
-  }
-  elseif ($_POST['edit']['confirm']) {
-    simple_access_delete_group($_POST['edit']['gid']);
-    drupal_goto('admin/user/simple_access');
-    return;
-  }
-  switch ($op) {
-    case 'delete':
-      //$hidden = form_hidden('gid', $gid);
-      $form['gid'] = array(
-        '#type' => 'hidden',
-        '#value' => $gid
-      );
-      //$output = theme('confirm', t('Are you sure you want to delete this group?'), 'admin/access/simple_access', NULL, NULL, NULL, $hidden);
-      $output = confirm_form('simple_access_delete_group', $form, t('Are you sure you want to delete this group?'), 'admin/user/simple_access');
-      break;
-    case 'edit':
-      return simple_access_group_form($gid);
-      break;
-    default:
-  }
-  //print theme('page', $output);
-  return $output;
+function simple_access_delete_group_confirm() {
+  $gid = arg(4);
+  $form['gid'] = array(
+    '#type' => 'hidden',
+    '#value' => $gid
+  );
+  return confirm_form($form,
+    t('Are you sure you want to delete this group?'),
+    'admin/user/simple_access',
+    t('This action cannot be undone.'), t('Delete'), t('Cancel')
+  );
+}
+
+function simple_access_delete_group_confirm_submit($form_id, $form_values) {
+  simple_access_delete_group($form_values['gid']);
+  return 'admin/user/simple_access';
 }
 
 function simple_access_page_overview() {
-  /* if (!variable_get('simple_access_active', FALSE)) {
-    drupal_set_message(t('Fire it up first.'));
-    drupal_goto('admin/access/simple_access/setup');
-  } */
   if (count($rg = simple_access_get_groups())) {
     drupal_set_title(t('Access Groups'));
     $header = array(t('Group'), t('Roles'), t('Operations'));
@@ -442,10 +343,6 @@ function simple_access_page_overview() {
 
 function simple_access_settings_page() {
   drupal_set_title(t('Simple Access Settings'));
-  if ($_POST['op'] == t('Save Options')) {
-    variable_set('sa_display', array_keys($_POST['edit']['sa_display']));
-    drupal_set_message(t('Options saved'));
-  }
   $options = array(
     'view' => t('<strong>View</strong>: Displays viewability selections at top of node form. Selected access groups will be the only users who can view the node. All unselected = normal node behavior (viewable by all).<br />'),
     'update' => t('<strong>Edit</strong>: Displays editability selections at top of node form. Users who are part of selected access groups will be able to edit this node. All unselected = "normal" node behavior (only author and admins may edit).<br />'),
@@ -459,37 +356,13 @@ function simple_access_settings_page() {
     '#description' => t('Which options should appear on node add/edit pages for administrators? Select at least one.'),
     '#required' => TRUE
   );
+   $form['sa_showgroups'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Show groups even when user is not a member.',
+    '#default_value' => variable_get('sa_showgroups',0),
+    '#description' => 'This is useful when you want to have a user be able to make content viewable by themselves and a higher privileged group (e.g. students sharing work with faculty)',
+    );
   return system_settings_form($form);
-}
-
-function simple_access_setup_page() {
-  if ($_POST['op'] == t('Setup Database')) {
-    simple_access_initialize(TRUE);
-    drupal_goto('admin/access/simple_access');
-  }
-  elseif ($_POST['op'] == t('Deactivate')) {
-    return confirm_form('simple_access_deactivate_confirm', $form, t('Are you sure you want to deactivate the module?'), 'admin/access/simple_access/setup', t('All nodes will become viewable by everyone. This action cannot be undone'), t('Deactivate'), t('Cancel'));
-  }
-
-  if (!variable_get('simple_access_active', FALSE)) {
-    drupal_set_title(t('Setup Database for Simple Access'));
-    $form[] = array(
-      '#type' => 'submit',
-      '#value' => t('Setup Database'),
-      '#prefix' => t("<p>In order to activate simple_access, the database needs to be configured.</p><p>Click this button to get things going.</p>")
-    );
-    $output .= drupal_get_form('simple_access_activate', $form);
-  }
-  else {
-    drupal_set_title(t('Deactivate Simple Access'));
-    $form[] = array(
-      '#type' => 'submit',
-      '#value' => t('Deactivate'),
-      '#prefix' => t("<p>Before deactivating simple_access.module, you'll need to click this button in order to remove the simple_access grants from the database. If you do not do this, all of your nodes will become invisible to anyone but administators when you deactivate the module.</p><p><strong>Do this only when you want to deactivate the module.</strong></p>")
-    );
-    $output .= drupal_get_form('simple_access_deactivate', $form);
-  }
-  return $output;
 }
 
 function simple_access_deactivate_confirm_submit($form_id, $form_values) {
@@ -506,7 +379,7 @@ function simple_access_group_form($gid = NULL) {
     $roles = simple_access_get_roles($gid);
     $form['gid'] = array(
       '#type' => 'hidden',
-      '#value' => $gid
+      '#value' => $gid,
     );
   }
   else {
@@ -521,25 +394,25 @@ function simple_access_group_form($gid = NULL) {
     '#maxlength' => 80,
     '#description' => t('The name for the access group as it will appear on the content editing form.'),
     '#attributes' => $attributes = NULL,
-    '#required' => TRUE
+    '#required' => TRUE,
   );
   $form['roles'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Roles'),
     '#default_value' => $roles,
     '#options' => user_roles(),
-    '#description' => t('Roles that can view')
+    '#description' => t('Roles that can view'),
   );
   $form['weight'] = array(
     '#type' => 'weight',
     '#title' => 'Weight',
     '#default_value' => $weight,
     '#delta' => 10,
-    '#description' => t('When setting permissions, heavier names will sink and lighter names will be positioned nearer the top.')
+    '#description' => t('When setting permissions, heavier names will sink and lighter names will be positioned nearer the top.'),
   );
   $form[] = array(
     '#type' => 'submit',
-    '#value' => t('Submit')
+    '#value' => t('Submit'),
   );
   return $form;
 }
@@ -590,12 +463,11 @@ function simple_access_group_select($all = FALSE) {
 /**
   * Get a list of group/grant ids based on a list of user roles
   * $roles should be a linear list a role ids
-  *
   */
-
 function simple_access_groups_from_roles($roles) {
   // there probably should be some 'static' stuff going on here
-  $gids = array();
+  // always return gid 0 just to be safe. 
+  $gids = array(0);
   $result = db_query("SELECT gid FROM {simple_access_roles} WHERE rid IN (%s)", implode(",", $roles));
   while ($g = db_fetch_object($result)) {
     $gids[] = $g->gid;
@@ -617,8 +489,7 @@ function simple_access_save_group($edit) {
   }
   db_query('DELETE FROM {simple_access_roles} WHERE gid = %d', $edit['gid']);
   db_query('DELETE FROM {simple_access_groups} WHERE gid = %d', $edit['gid']);
-  $success = TRUE;
-  $success = $success && db_query("INSERT INTO {simple_access_groups} (gid, name, weight) VALUES (%d, '%s', %d)", $edit['gid'], $edit['name'], $edit['weight']);
+  $success = db_query("INSERT INTO {simple_access_groups} (gid, name, weight) VALUES (%d, '%s', %d)", $edit['gid'], $edit['name'], $edit['weight']);
   if (is_array($edit['roles'])) {
     foreach($edit['roles'] as $key => $value) {
       if ($value) {
@@ -627,7 +498,7 @@ function simple_access_save_group($edit) {
     }
   }
   if (!$success) {
-    drupal_set_message(t("There was a problem saving to the database"));
+    drupal_set_message(t('There was a problem saving to the database.'));
   }
   return $success;
 }
@@ -652,7 +523,7 @@ function simple_access_initialize($initialize = TRUE) {
     // re-enable universal view grant
     db_query("INSERT INTO {node_access} (nid, gid, realm, grant_view, grant_update, grant_delete) VALUES (0, 0, 'all', 1, 0, 0)");
     variable_set('simple_access_active', FALSE);
-    drupal_set_message(t('The database has been re-configured. You should now visit %modules to disable the simple_access module itself.', array('%modules' => l('the modules page', 'admin/modules'))));
+    drupal_set_message(t('The database has been re-configured. You should now visit %modules to disable the simple_access module itself.', array('%modules' => l('the modules page', 'admin/build/modules'))));
   }
 }
 
@@ -661,21 +532,20 @@ function simple_access_initialize($initialize = TRUE) {
   * List hidden, editable, and deletable nodes
   *
   */
-
 function simple_access_nodes() {
   switch(arg(3)) {
-    case 'edit' :
+    case 'edit':
       drupal_set_title(t('Items With Edit Access Set'));
       $output = '<div>'.t('These nodes have been set as "additionally editable by" certain Simple Access <a href="!url">groups</a>. ', array('!url' => url('admin/user/simple_access'))).'</div><br />';
       $sql = "SELECT DISTINCT n.title, na.nid FROM {node} n INNER JOIN {node_access} na ON n.nid = na.nid WHERE na.realm='simple_access' AND na.gid > 0 AND na.grant_update = 1";
       break;
-    case 'delete' :
+    case 'delete':
       drupal_set_title(t('Items With Delete Access Set'));
       $output = '<div>'.t('These nodes have been set as "additionally deletable by" certain Simple Access <a href="!url">groups</a>. ', array('!url' => url('admin/user/simple_access'))).'</div><br />';
       $sql = "SELECT DISTINCT n.title, na.nid FROM {node} n INNER JOIN {node_access} na ON n.nid = na.nid WHERE na.realm='simple_access' AND na.gid > 0 AND na.grant_delete = 1";
       break;
-    case 'view' :
-    default :
+    case 'view':
+    default:
       drupal_set_title(t('Items With View Access Set'));
       $output = '<div>'.t('These nodes have been set as "only viewable by" certain Simple Access <a href="!url">groups</a>.', array('!url' => url('admin/user/simple_access'))).'</div><br />';
       $sql = "SELECT DISTINCT n.title, na.nid FROM {node} n INNER JOIN {node_access} na ON n.nid = na.nid WHERE na.realm='simple_access' AND na.gid > 0 AND na.grant_view = 1";
@@ -707,6 +577,18 @@ function simple_access_nodes() {
   else {
     $output .= '<div>'.t('No nodes match this criteria.').'</div>';
   }
-  //print theme('page', $output);
   return $output;
+}
+
+/**
+ * Implementation of hook_enable
+ */ 
+function simple_access_enable()
+{
+  drupal_set_message(t('To fully activate simple_access you also need to !rebuild_permissions.', array('!rebuild_permissions' => l(t('rebuild permissions'), 'admin/content/node-settings'))));
+}
+
+function simple_access_disable()
+{
+  drupal_set_message(t('To fully disable simple_access you also need to !rebuild_permissions.', array('!rebuild_permissions' => l(t('rebuild permissions'), 'admin/content/node-settings'))));
 }
