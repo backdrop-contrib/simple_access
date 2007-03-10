@@ -33,6 +33,31 @@ function simple_access_install() {
   drupal_set_message(t('simple access has created the required tables.'));
 }
 
+/** 
+ * Implementation of hook_uninstall()
+ */
+function simple_access_uninstall() {
+  db_query('DROP TABLE {simple_access_groups}');
+  db_query('DROP TABLE {simple_access_roles}');
+  variable_del('sa_display');
+  variable_del('sa_showgroups');
+  drupal_set_message(t('simple access has been uninstalled'));
+}
+
+/**
+ * Implementation of hook_enable
+ */ 
+function simple_access_enable() {
+  drupal_set_message(t('To fully activate simple_access you also need to !rebuild_permissions.', array('!rebuild_permissions' => l(t('rebuild permissions'), 'admin/content/node-settings'))));
+}
+
+/**
+ * Implementation of hook_disable()
+ */
+function simple_access_disable() {
+  drupal_set_message(t('To fully disable simple_access you also need to !rebuild_permissions.', array('!rebuild_permissions' => l(t('rebuild permissions'), 'admin/content/node-settings'))));
+}
+
 /**
  * Updates
  */
