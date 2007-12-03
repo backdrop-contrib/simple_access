@@ -84,7 +84,7 @@ function simple_access_update_1() {
 function simple_access_update_2() {
   $ret[] = update_sql("CREATE TABLE {simple_access_node} SELECT nid, gid, grant_view, grant_update, grant_delete FROM {node_access} WHERE realm = 'simple_access'");
   $ret[] = update_sql('ALTER TABLE {simple_access_node} ADD PRIMARY KEY (nid)');
-  $ret[] = update_sql("ALTER TABLE {simple_access_node} CHANGE grant_view view TINYINT(3) UNSIGNED NOT NULL DEFAULT '0', CHANGE grant_update update TINYINT(3) UNSIGNED NOT NULL DEFAULT '0', CHANGE grant_delete delete TINYINT(3) UNSIGNED NOT NULL DEFAULT '0'");
+  $ret[] = update_sql("ALTER TABLE {simple_access_node} CHANGE `grant_view` `view` INT( 11 ) UNSIGNED NOT NULL DEFAULT '0', CHANGE `grant_update` `update` TINYINT( 1 ) UNSIGNED NOT NULL DEFAULT '0', CHANGE `grant_delete` `delete` TINYINT( 1 ) UNSIGNED NOT NULL DEFAULT '0' ");
   return $ret;
 }
 
