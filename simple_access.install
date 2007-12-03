@@ -8,6 +8,14 @@ function simple_access_install() {
   switch ($GLOBALS['db_type']) {
     case 'mysql':
     case 'mysqli':
+      db_query("CREATE TABLE {simple_access_node} (
+        nid int(10) unsigned NOT NULL default '0',
+        gid int(10) unsigned NOT NULL default '0',
+        view tinyint(3) unsigned NOT NULL default '0',
+        update tinyint(3) unsigned NOT NULL default '0',
+        delete tinyint(3) unsigned NOT NULL default '0',
+        PRIMARY KEY  (nid)
+      ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
       db_query("CREATE TABLE {simple_access_groups} (
         gid int(10) NOT NULL default '0',
         name varchar(50) NOT NULL default '',
@@ -19,6 +27,13 @@ function simple_access_install() {
       ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
       break;
     case 'pgsql':
+      db_query("CREATE TABLE {simple_access_groups} (
+        nid integer unsigned NOT NULL default '0',
+        gid integer unsigned NOT NULL default '0',
+        view integer unsigned NOT NULL default '0',
+        update integer unsigned NOT NULL default '0',
+        delete integer unsigned NOT NULL default '0',
+      );");
       db_query("CREATE TABLE {simple_access_groups} (
         gid serial NOT NULL,
         name varchar(50) NOT NULL default '',
@@ -39,6 +54,7 @@ function simple_access_install() {
 function simple_access_uninstall() {
   db_query('DROP TABLE {simple_access_groups}');
   db_query('DROP TABLE {simple_access_roles}');
+  db_query('DROP TABLE {simple_access_node}');
   variable_del('sa_display');
   variable_del('sa_showgroups');
   drupal_set_message(t('simple access has been uninstalled'));
@@ -64,3 +80,11 @@ function simple_access_disable() {
 function simple_access_update_1() {
   return _system_update_utf8(array('simple_access_groups', 'simple_access_roles'));
 }
+
+function simple_access_update_2() {
+  $ret[] = update_sql("CREATE TABLE {simple_access_node} SELECT nid, gid, grant_view, grant_update, grant_delete FROM {node_access} WHERE realm = 'simple_access'");
+  $ret[] = update_sql('ALTER TABLE {simple_access_node} ADD PRIMARY KEY (nid)');
+  $ret[] = update_sql("ALTER TABLE {simple_access_node} CHANGE grant_view view TINYINT(3) UNSIGNED NOT NULL DEFAULT '0', CHANGE grant_update update TINYINT(3) UNSIGNED NOT NULL DEFAULT '0', CHANGE grant_delete delete TINYINT(3) UNSIGNED NOT NULL DEFAULT '0'");
+  return $ret;
+}
+
