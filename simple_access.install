@@ -11,9 +11,9 @@ function simple_access_install() {
       db_query("CREATE TABLE {simple_access_node} (
         nid int(10) unsigned NOT NULL default '0',
         gid int(10) unsigned NOT NULL default '0',
-        view tinyint(3) unsigned NOT NULL default '0',
-        update tinyint(3) unsigned NOT NULL default '0',
-        delete tinyint(3) unsigned NOT NULL default '0',
+        `view` tinyint unsigned NOT NULL default '0',
+        `update` tinyint unsigned NOT NULL default '0',
+        `delete` tinyint unsigned NOT NULL default '0',
         PRIMARY KEY  (nid)
       ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
       db_query("CREATE TABLE {simple_access_groups} (
