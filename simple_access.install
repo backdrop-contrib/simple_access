@@ -15,16 +15,16 @@ function simple_access_install() {
         `update` tinyint unsigned NOT NULL default '0',
         `delete` tinyint unsigned NOT NULL default '0',
         PRIMARY KEY  (nid)
-      ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
+      ) /*!40100 DEFAULT CHARACTER SET utf8 */;");
       db_query("CREATE TABLE {simple_access_groups} (
         gid int(10) NOT NULL default '0',
         name varchar(50) NOT NULL default '',
         weight int(3) NOT NULL default '0'
-      ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
+      ) /*!40100 DEFAULT CHARACTER SET utf8 */;");
       db_query("CREATE TABLE {simple_access_roles} (
         gid int(10) NOT NULL default '0',
         rid int(10) NOT NULL default '0'
-      ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */;");
+      ) /*!40100 DEFAULT CHARACTER SET utf8 */;");
       break;
     case 'pgsql':
       db_query("CREATE TABLE {simple_access_groups} (
