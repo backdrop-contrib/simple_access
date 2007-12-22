@@ -132,8 +132,10 @@ function simple_access_nodeapi(&$node, $op) {
     case 'update':
     case 'insert':
       db_query('DELETE FROM {simple_access_node} WHERE nid = %d', $node->nid);
-      foreach ($node->simple_access as $gid => $access) {
-        db_query("INSERT INTO {simple_access_node} (`nid`, `gid`, `view`, `update`, `delete`) VALUES (%d, %d, %d, %d, %d)", $node->nid, $gid, $access['view'], $access['update'], $access['delete']);
+      if (isset($node->simple_access)) {
+        foreach ($node->simple_access as $gid => $access) {
+          db_query("INSERT INTO {simple_access_node} (`nid`, `gid`, `view`, `update`, `delete`) VALUES (%d, %d, %d, %d, %d)", $node->nid, $gid, $access['view'], $access['update'], $access['delete']);
+        }
       }
       break;
 
