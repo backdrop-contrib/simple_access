@@ -119,6 +119,10 @@ function simple_access_perm() {
  */
 function simple_access_nodeapi(&$node, $op) {
   switch ($op) {
+    case 'prepare':
+      $node->simple_access = array();
+      break;
+
     case 'load':
       $extra['simple_access'] = array();
       $result = db_query('SELECT na.gid, na.view, na.update, na.delete FROM {simple_access_node} na WHERE na.nid = %d', $node->nid);
