@@ -120,10 +120,11 @@ function simple_access_perm() {
 function simple_access_nodeapi(&$node, $op) {
   switch ($op) {
     case 'load':
+      $extra['simple_access'] = array();
       $result = db_query('SELECT na.gid, na.view, na.update, na.delete FROM {simple_access_node} na WHERE na.nid = %d', $node->nid);
       while($grant = db_fetch_object($result)) {
         if ($grant->gid > 0) {
-          $extra['simple_access'][$grant->gid] = (array)$grant;
+          $extra['simple_access'][$grant->gid] = $grant;
         }
       }
       return $extra;
@@ -134,7 +135,9 @@ function simple_access_nodeapi(&$node, $op) {
       db_query('DELETE FROM {simple_access_node} WHERE nid = %d', $node->nid);
       if (isset($node->simple_access)) {
         foreach ($node->simple_access as $gid => $access) {
-          db_query("INSERT INTO {simple_access_node} (`nid`, `gid`, `view`, `update`, `delete`) VALUES (%d, %d, %d, %d, %d)", $node->nid, $gid, $access['view'], $access['update'], $access['delete']);
+          if ($access['view'] || $access['update'] || $access['delete']) {
+            db_query("INSERT INTO {simple_access_node} (`nid`, `gid`, `view`, `update`, `delete`) VALUES (%d, %d, %d, %d, %d)", $node->nid, $gid, $access['view'], $access['update'], $access['delete']);
+          }
         }
       }
       break;
@@ -203,13 +206,14 @@ function simple_access_form_alter($form_id, &$form){
 
 function simple_access_form($node){
   drupal_add_css(drupal_get_path('module', 'simple_access') .'/simple_access.css');
+  $user_groups = array_filter($node->simple_access, '_simple_access_filter_access');
   // set up the outer fieldset
   $form['simple_access'] = array(
     '#title' => t('Access'),
     '#type' => 'fieldset',
-    '#collapsible' => true,
-    '#collapsed' => true,
-    '#tree' => true,
+    '#collapsible' => TRUE,
+    '#collapsed' => empty($user_groups),
+    '#tree' => TRUE,
     '#weight' => 5,
     '#access' => user_access('assign access to nodes') || user_access('administer nodes'),
     '#theme' => 'simple_access_form',
@@ -223,7 +227,7 @@ function simple_access_form($node){
   // If the "Show groups even when user is not a member" setting is
   // enabled, or if the current user has 'administer nodes', let
   // them choose from any of the SA groups.
-  $groups = simple_access_group_select(user_access('administer nodes') || variable_get('sa_showgroups', 0));
+  $groups = simple_access_group_select();
 
   foreach ($groups as $gid => $group) {
     $access = $group->access || user_access('administer nodes');
@@ -236,17 +240,17 @@ function simple_access_form($node){
     );
     $form['simple_access'][$gid]['view'] = array(
       '#type' => 'checkbox',
-      '#default_value' => $group->view,
+      '#default_value' => $node->simple_access[$gid]->view,
       '#access' => $access && $variable['view'],
     );
     $form['simple_access'][$gid]['update'] = array(
       '#type' => 'checkbox',
-      '#default_value' => $group->update,
+      '#default_value' => $node->simple_access[$gid]->update,
       '#access' => $access && $variable['update'],
     );
     $form['simple_access'][$gid]['delete'] = array(
       '#type' => 'checkbox',
-      '#default_value' => $group->delete,
+      '#default_value' => $node->simple_access[$gid]->delete,
       '#access' => $access && $variable['delete'],
     );
   }
@@ -438,18 +442,23 @@ function simple_access_group_select() {
 
   if (empty($groups)) {
     global $user;
+    $default_access = user_access('administer nodes');
 
     $groups = array();
     $result = db_query('SELECT gid, name FROM {simple_access_groups} ORDER BY weight, name');
     while ($group = db_fetch_object($result)) {
       $groups[$group->gid] = $group;
+      $groups[$group->gid]->access = $default_access;
+
     }
 
+    if (!$default_access) {
     // return just groups for which user is a member
-    $roles = array_keys($user->roles);
-    $result = db_query('SELECT DISTINCT g.gid FROM {simple_access_groups} g INNER JOIN {simple_access_roles} r ON g.gid = r.gid WHERE r.rid IN (%s) ORDER BY weight, name', implode(',', $roles));
-    while ($group = db_fetch_object($result)) {
-      $groups[$group->gid]->access = TRUE;
+      $roles = array_keys($user->roles);
+      $result = db_query('SELECT DISTINCT g.gid FROM {simple_access_groups} g INNER JOIN {simple_access_roles} r ON g.gid = r.gid WHERE r.rid IN (%s) ORDER BY weight, name', implode(',', $roles));
+      while ($group = db_fetch_object($result)) {
+        $groups[$group->gid]->access = TRUE;
+      }
     }
   }
   return $groups;
@@ -555,4 +564,12 @@ function simple_access_nodes() {
   return $output;
 }
 
+/**
+ * Filter the access records for the corrent user
+ */
+function _simple_access_filter_access($a) {
+  $groups = simple_access_group_select();
+
+  return isset($groups[$a->gid]->access) && $groups[$a->gid]->access;
+}
 
