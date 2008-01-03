@@ -14,7 +14,7 @@ function simple_access_install() {
         `view` tinyint unsigned NOT NULL default '0',
         `update` tinyint unsigned NOT NULL default '0',
         `delete` tinyint unsigned NOT NULL default '0',
-        PRIMARY KEY  (nid)
+        PRIMARY KEY  (nid, gid)
       ) /*!40100 DEFAULT CHARACTER SET utf8 */;");
       db_query("CREATE TABLE {simple_access_groups} (
         gid int(10) NOT NULL default '0',
@@ -85,6 +85,12 @@ function simple_access_update_2() {
   $ret[] = update_sql("CREATE TABLE {simple_access_node} SELECT nid, gid, grant_view, grant_update, grant_delete FROM {node_access} WHERE realm = 'simple_access'");
   $ret[] = update_sql('ALTER TABLE {simple_access_node} ADD PRIMARY KEY (nid)');
   $ret[] = update_sql("ALTER TABLE {simple_access_node} CHANGE `grant_view` `view` INT( 11 ) UNSIGNED NOT NULL DEFAULT '0', CHANGE `grant_update` `update` TINYINT( 1 ) UNSIGNED NOT NULL DEFAULT '0', CHANGE `grant_delete` `delete` TINYINT( 1 ) UNSIGNED NOT NULL DEFAULT '0' ");
+  return $ret;
+}
+
+function simple_access_update_3() {
+  $ret[] = update_sql('ALTER TABLE {simple_access_node} DROP PRIMARY KEY');
+  $ret[] = update_sql('ALTER TABLE {simple_access_node} ADD PRIMARY KEY (nid,gid)');
   return $ret;
 }
 
