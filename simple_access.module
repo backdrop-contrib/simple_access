@@ -167,9 +167,9 @@ function simple_access_node_access_records($node)
       $records[] = array(
         'realm' => 'simple_access',
         'gid' => $gid,
-        'grant_view' => $access['view'],
-        'grant_update' => $access['update'],
-        'grant_delete' => $access['delete'],
+        'grant_view' => $access->view,
+        'grant_update' => $access->update,
+        'grant_delete' => $access->delete,
         'priority' => 1,
       );
     }
