@@ -6,8 +6,8 @@
  * @file
  * This module allows administrators to make nodes viewable by specific
  * 'access groups'. Each access group can contain any number of roles.
- * If a node is not assigned to any access groups, it will remain viewable by
- * all users.
+ * If a node is not assigned to any access groups, it will remain viewable 
+ * by all users.
  *
  * Database definition:
  * @code
@@ -164,6 +164,7 @@ function simple_access_node_access_records($node)
     // $type is either 'view', 'update', or 'delete'
 
     foreach($node->simple_access as $gid => $access) {
+      $access = (object)$access;
       $records[] = array(
         'realm' => 'simple_access',
         'gid' => $gid,
@@ -181,7 +182,7 @@ function simple_access_node_access_records($node)
       'grant_view' => user_access('access content'),
       'grant_update' => user_access('access content'),
       'grant_delete' => user_access('access content'),
-      'priority' => 0,
+      'priority' => 1,
     );
   }
   return $records;
@@ -518,7 +519,6 @@ function simple_access_delete_group($gid) {
 
 /**
   * List hidden, editable, and deletable nodes
-  *
   */
 function simple_access_nodes() {
   switch(arg(3)) {
