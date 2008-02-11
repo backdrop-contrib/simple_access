@@ -165,17 +165,21 @@ function simple_access_node_access_records($node)
 
     foreach($node->simple_access as $gid => $access) {
       $access = (object)$access;
-      $records[] = array(
-        'realm' => 'simple_access',
-        'gid' => $gid,
-        'grant_view' => $access->view,
-        'grant_update' => $access->update,
-        'grant_delete' => $access->delete,
-        'priority' => 1,
-      );
+      if ($access->view || $access->update || $access->delete) {
+        $records[] = array(
+          'realm' => 'simple_access',
+          'gid' => $gid,
+          'grant_view' => $access->view,
+          'grant_update' => $access->update,
+          'grant_delete' => $access->delete,
+          'priority' => 1,
+        );
+      }
     }
   }
   if (!empty($records)) {
+    // FIXME: Need to work out a better method of determining the authors
+    // access to the node.
     $records[] = array(
       'realm' => 'simple_access_author',
       'gid' => $node->uid,
