@@ -177,7 +177,7 @@ function simple_access_node_access_records($node)
       }
     }
   }
-  if (!empty($records)) {
+  if (!empty($records) && $node->uid) {
     // FIXME: Need to work out a better method of determining the authors
     // access to the node.
     $records[] = array(
