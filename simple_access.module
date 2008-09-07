@@ -23,7 +23,7 @@ function simple_access_menu($may_cache) {
   if ($may_cache) {
     $items[] = array(
       'path' => 'admin/user/simple_access',
-      'title' => t('Simple Access'),
+      'title' => t('Access groups'),
       'access' => $access,
       'callback' => 'simple_access_page_overview',
       'type' => MENU_NORMAL_ITEM,
@@ -60,6 +60,21 @@ function simple_access_menu($may_cache) {
       'callback arguments' => array('simple_access_delete_group_confirm'),
       'access' => $access,
       'type' => MENU_CALLBACK,
+    );
+    $items[] = array(
+      'path' => 'admin/user/sa_profiles',
+      'title' => t('Access profiles'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => array('simple_access_profile_list'),
+      'access' => $access,
+      'type' => MENU_NORMAL_ITEM,
+    );
+    $items[] = array(
+      'path' => 'admin/user/sa_profiles/list',
+      'title' => t('List'),
+      'access' => $access,
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => -9,
     );
     $items[] = array(
       'path' => 'admin/settings/simple_access',
@@ -111,7 +126,7 @@ function simple_access_menu($may_cache) {
  * Implementation of hook_perm().
  */
 function simple_access_perm() {
-  return array('manage simple access', 'assign access to nodes');
+  return array('manage simple access', 'assign access to nodes', 'assign profiles to nodes');
 }
 
 /**
@@ -328,7 +343,7 @@ function simple_access_delete_group_confirm_submit($form_id, $form_values) {
 
 function simple_access_page_overview() {
   if (count($rg = simple_access_get_groups())) {
-    drupal_set_title(t('Access Groups'));
+    drupal_set_title(t('Access groups'));
     $header = array(t('Group'), t('Roles'), t('Operations'));
     $roles = user_roles();
     foreach ($rg as $g) {
@@ -349,6 +364,61 @@ function simple_access_page_overview() {
     drupal_set_message(t('You have not yet defined any access groups.'));
     drupal_goto('admin/user/simple_access/add');
   }
+}
+
+function simple_access_profile_list() {
+  $form = array();
+  $result = db_query('SELECT * FROM {simple_access_profiles} ORDER BY weight ASC, name ASC');
+  
+  $form['profiles'] = array(
+    '#tree' => TRUE,
+  );
+  while ($row = db_fetch_array($result)) {
+    $form['profiles'][$row]['name'] = array(
+      '#value' => $row['name'],
+    );
+    $form['profiles'][$row]['weight'] = array(
+      '#type' => 'weight',
+      '#default_value' => $row['weight'],
+    );
+    $form['profiles'][$row]['weight'] = array(
+      '#value' => l(t('edit'), 'admin/user/sa_profiles/'. $row['pid'] .'/edit') .' '. l(t('delete'), 'admin/user/sa_profiles/'. $row['pid'] .'/delete'),
+    );
+  }
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update'),
+  );
+
+  return $form;
+}
+
+function theme_simple_access_profile_list($form) {
+  $head = array(t('Name'), t('Weight'), t('Operations'));
+  $rows = array();
+
+  foreach (element_children($form['profiles']) as $id) {
+    $rows[] = array(
+      drupal_render($form['profiles'][$id]['name']),
+      drupal_render($form['profiles'][$id]['weight']),
+      drupal_render($form['profiles'][$id]['operations']),
+    );
+  }
+
+  if (empty($rows)) {
+    $rows[] = array(
+      array(
+        'data' => t('No profiles defined'),
+        'colspan' => 3,
+        'align' => 'center',
+      ),
+    );
+  }
+  $output.= theme('table', $head, $rows);
+  $output.= drupal_render($form);
+
+  return $output;
 }
 
 function simple_access_settings_page() {
