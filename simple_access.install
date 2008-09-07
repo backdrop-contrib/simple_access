@@ -25,6 +25,25 @@ function simple_access_install() {
         gid int(10) NOT NULL default '0',
         rid int(10) NOT NULL default '0'
       ) /*!40100 DEFAULT CHARACTER SET utf8 */;");
+      db_query("CREATE TABLE {simple_access_profiles} (
+        pid int(10) NOT NULL default '0',
+        name varchar(50) NOT NULL default '',
+        weight int(3) NOT NULL default '0',
+        PRIMARY KEY  (`pid`)
+        ) /*!40100 DEFAULT CHARACTER SET utf8 */;");
+      db_query("CREATE TABLE {simple_access_profiles_access} (
+        pid int(10) unsigned NOT NULL default '0',
+        gid int(10) unsigned NOT NULL default '0',
+        `view` tinyint(3) unsigned NOT NULL default '0',
+        `update` tinyint(3) unsigned NOT NULL default '0',
+        `delete` tinyint(3) unsigned NOT NULL default '0',
+        PRIMARY KEY  (`pid`,`gid`)
+      ) /*!40100 DEFAULT CHARACTER SET utf8 */;");
+      db_query("CREATE TABLE {simple_access_profiles_node} (
+        nid int(10) NOT NULL,
+        pid int(10) NOT NULL,
+        PRIMARY KEY  (`nid`,`pid`)
+      ) /*!40100 DEFAULT CHARACTER SET utf8 */;");
       break;
     case 'pgsql':
       db_query("CREATE TABLE {simple_access_groups} (
@@ -43,6 +62,22 @@ function simple_access_install() {
         gid integer NOT NULL default '0',
         rid integer NOT NULL default '0'
       );");
+      db_query("CREATE TABLE {simple_access_profiles} (
+        pid int(10) NOT NULL default '0',
+        name varchar(50) NOT NULL default '',
+        weight int(3) NOT NULL default '0'
+      );");
+      db_query("CREATE TABLE {simple_access_profiles_access} (
+        pid int(10) unsigned NOT NULL default '0',
+        gid int(10) unsigned NOT NULL default '0',
+        view tinyint(3) unsigned NOT NULL default '0',
+        update tinyint(3) unsigned NOT NULL default '0',
+        delete tinyint(3) unsigned NOT NULL default '0'
+      );");
+      db_query("CREATE TABLE {simple_access_profiles_node} (
+        nid int(10) NOT NULL,
+        pid int(10) NOT NULL
+      );");
       break;
   }
   drupal_set_message(t('simple access has created the required tables.'));
@@ -55,6 +90,9 @@ function simple_access_uninstall() {
   db_query('DROP TABLE {simple_access_groups}');
   db_query('DROP TABLE {simple_access_roles}');
   db_query('DROP TABLE {simple_access_node}');
+  db_query('DROP TABLE {simple_access_profiles}');
+  db_query('DROP TABLE {simple_access_profiles_access}');
+  db_query('DROP TABLE {simple_access_profiles_node}');
   variable_del('sa_display');
   variable_del('sa_showgroups');
   drupal_set_message(t('simple access has been uninstalled'));
@@ -94,3 +132,47 @@ function simple_access_update_3() {
   return $ret;
 }
 
+function simple_access_update_4() {
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      update_sql("CREATE TABLE {simple_access_profiles} (
+        pid int(10) NOT NULL default '0',
+        name varchar(50) NOT NULL default '',
+        weight int(3) NOT NULL default '0',
+        PRIMARY KEY  (`pid`)
+        ) /*!40100 DEFAULT CHARACTER SET utf8 */;");
+      update_sql("CREATE TABLE {simple_access_profiles_access} (
+        pid int(10) unsigned NOT NULL default '0',
+        gid int(10) unsigned NOT NULL default '0',
+        `view` tinyint(3) unsigned NOT NULL default '0',
+        `update` tinyint(3) unsigned NOT NULL default '0',
+        `delete` tinyint(3) unsigned NOT NULL default '0',
+        PRIMARY KEY  (`pid`,`gid`)
+      ) /*!40100 DEFAULT CHARACTER SET utf8 */;");
+      update_sql("CREATE TABLE {simple_access_profiles_node} (
+        nid int(10) NOT NULL,
+        pid int(10) NOT NULL,
+        PRIMARY KEY  (`nid`,`pid`)
+      ) /*!40100 DEFAULT CHARACTER SET utf8 */;");
+      break;
+    case 'pgsql':
+      update_sql("CREATE TABLE {simple_access_profiles} (
+        pid int(10) NOT NULL default '0',
+        name varchar(50) NOT NULL default '',
+        weight int(3) NOT NULL default '0'
+      );");
+      update_sql("CREATE TABLE {simple_access_profiles_access} (
+        pid int(10) unsigned NOT NULL default '0',
+        gid int(10) unsigned NOT NULL default '0',
+        view tinyint(3) unsigned NOT NULL default '0',
+        update tinyint(3) unsigned NOT NULL default '0',
+        delete tinyint(3) unsigned NOT NULL default '0'
+      );");
+      update_sql("CREATE TABLE {simple_access_profiles_node} (
+        nid int(10) NOT NULL,
+        pid int(10) NOT NULL
+      );");
+      break;
+  }
+}
