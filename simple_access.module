@@ -128,8 +128,10 @@ function simple_access_nodeapi(&$node, $op) {
     case 'load':
       $extra = array();
       $result = db_query('SELECT na.gid, na.view, na.update, na.delete FROM {simple_access_node} na WHERE na.nid = %d', $node->nid);
-      while($grant = db_fetch_object($result)) {
-        $extra[$grant->gid] = $grant;
+      while($grant = db_fetch_array($result)) {
+        $gid = $grant['gid'];
+        unset($grant['gid']);
+        $extra[$gid] = $grant;
       }
       $node->simple_access = $extra;
       break;
@@ -164,14 +166,13 @@ function simple_access_node_access_records($node)
     // $type is either 'view', 'update', or 'delete'
 
     foreach($node->simple_access as $gid => $access) {
-      $access = (object)$access;
-      if ($access->view || $access->update || $access->delete) {
+      if ($access['view'] || $access['update'] || $access['delete']) {
         $records[] = array(
           'realm' => 'simple_access',
           'gid' => $gid,
-          'grant_view' => $access->view,
-          'grant_update' => $access->update,
-          'grant_delete' => $access->delete,
+          'grant_view' => $access['view'],
+          'grant_update' => $access['update'],
+          'grant_delete' => $access['delete'],
           'priority' => 1,
         );
       }
@@ -249,17 +250,17 @@ function simple_access_form($node){
     );
     $form['simple_access'][$gid]['view'] = array(
       '#type' => 'checkbox',
-      '#default_value' => $node->simple_access[$gid]->view,
+      '#default_value' => $node->simple_access[$gid]['view'],
       '#access' => $access && $variable['view'],
     );
     $form['simple_access'][$gid]['update'] = array(
       '#type' => 'checkbox',
-      '#default_value' => $node->simple_access[$gid]->update,
+      '#default_value' => $node->simple_access[$gid]['update'],
       '#access' => $access && $variable['update'],
     );
     $form['simple_access'][$gid]['delete'] = array(
       '#type' => 'checkbox',
-      '#default_value' => $node->simple_access[$gid]->delete,
+      '#default_value' => $node->simple_access[$gid]['delete'],
       '#access' => $access && $variable['delete'],
     );
   }
