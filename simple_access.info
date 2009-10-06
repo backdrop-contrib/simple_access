@@ -1,0 +1,5 @@
+; $Id$
+name = Simple Access
+description = Provides simple hide/view access for nodes.
+core = 6.x
+package = Node Access
