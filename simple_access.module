@@ -92,7 +92,7 @@ function simple_access_menu() {
     'type' => MENU_LOCAL_TASK,
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/settings/simple_access'] = array(
+  $items['admin/config/people/simple_access'] = array(
     'title' => 'Simple Access',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('simple_access_settings_page'),
