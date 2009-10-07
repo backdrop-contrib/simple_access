@@ -202,9 +202,9 @@ function simple_access_node_insert($node) {
 }
 
 /**
- * Implements hook_node_insert().
+ * Implements hook_node_update().
  */
-function simple_access_node_insert($node) {
+function simple_access_node_update($node) {
   simple_access_node_save($node);
 }
 
@@ -346,10 +346,10 @@ function simple_access_node_access_explain($row) {
 
       if (!empty($profile['access'])) {
         foreach ($profile['access'] as $gid => $access) {
-          $message . = t('"%group" group can @perm.', array('%group' => $groups[$gid]['name'], '@perm' => implode(', ', array_keys(array_filter($access)))));
+          $message .= t('"%group" group can @perm.', array('%group' => $groups[$gid]['name'], '@perm' => implode(', ', array_keys(array_filter($access)))));
         }
       }
-      $message . = '</dt>';
+      $message .= '</dt>';
 
       return $message;
   }
