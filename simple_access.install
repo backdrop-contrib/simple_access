@@ -11,7 +11,10 @@
  */
 function simple_access_install() {
   drupal_install_schema('simple_access');
-  db_query("UPDATE {system} SET weight = 9 WHERE name = '%s'", 'simple_access');
+  db_update('system')
+    ->fields(array('weight' => 9))
+    ->condition('name', 'simple_access')
+    ->execute();
 
   drupal_set_message(st('simple access has created the required tables.'));
 }
