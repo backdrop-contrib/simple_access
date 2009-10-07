@@ -6,7 +6,7 @@
  */
 
 function theme_simple_access_form($form) {
-  drupal_add_css(drupal_get_path('module', 'simple_access') .'/simple_access.css');
+  drupal_add_css(drupal_get_path('module', 'simple_access') . '/simple_access.css');
 
   $output = '';
   if (isset($form['#admin'])) {
@@ -73,7 +73,7 @@ function theme_simple_access_page_overview($form) {
     );
   }
   $output .= theme('table', $header, $rows, array('id' => 'sa-group-list'));
-  $output .= drupal_render($form); 
+  $output .= drupal_render($form);
 
   return $output;
 }

@@ -1,5 +1,9 @@
 ; $Id$
 name = Simple Access
 description = Provides simple hide/view access for nodes.
-core = 6.x
+core = 7.x
 package = Node Access
+files[] = simple_access.module
+files[] = simple_access.install
+files[] = simple_access.admin.inc
+files[] = simple_access.theme.inc

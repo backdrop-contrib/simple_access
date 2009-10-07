@@ -32,7 +32,7 @@ function simple_access_page_overview() {
         '#attributes' => array('class' => 'sa-group-weight'),
       );
       $form['groups'][$gid]['ops'] = array(
-        '#value' => l('edit', 'admin/user/simple_access/edit/'. $gid) .'&nbsp;'. l('delete', 'admin/user/simple_access/delete/'. $gid),
+        '#value' => l(t('edit'), 'admin/user/simple_access/edit/' . $gid) . '&nbsp;' . l(t('delete'), 'admin/user/simple_access/delete/' . $gid),
       );
     }
     $form['submit'] = array(
@@ -128,7 +128,7 @@ function simple_access_delete_group_confirm_submit($form, &$form_state) {
 function simple_access_profile_list() {
   $form = array();
   $result = db_query('SELECT * FROM {simple_access_profiles} ORDER BY weight ASC, name ASC');
-  
+
   $form['profiles'] = array(
     '#tree' => TRUE,
   );
@@ -142,7 +142,7 @@ function simple_access_profile_list() {
       '#attributes' => array('class' => 'sa-profile-weight'),
     );
     $form['profiles'][$row['pid']]['operations'] = array(
-      '#value' => l(t('edit'), 'admin/user/sa_profiles/'. $row['pid'] .'/edit') .' '. l(t('delete'), 'admin/user/sa_profiles/'. $row['pid'] .'/delete'),
+      '#value' => l(t('edit'), 'admin/user/sa_profiles/' . $row['pid'] . '/edit') . ' ' . l(t('delete'), 'admin/user/sa_profiles/' . $row['pid'] . '/delete'),
     );
   }
 
@@ -241,7 +241,7 @@ function simple_access_settings_page() {
     '#description' => t('Which options should appear on node add/edit pages for administrators? Select at least one.'),
     '#required' => TRUE
   );
-   $form['sa_showgroups'] = array(
+  $form['sa_showgroups'] = array(
     '#type' => 'checkbox',
     '#title' => 'Show groups even when user is not a member.',
     '#default_value' => variable_get('sa_showgroups', 0),

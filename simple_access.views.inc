@@ -6,7 +6,7 @@
  */
 
 /**
- * Implementation of hook_views_plugins().
+ * Implements hook_views_plugins().
  */
 function simple_access_views_plugins() {
   return array(
@@ -16,7 +16,7 @@ function simple_access_views_plugins() {
         'help' => t('Will only make the views available if the user is apart of the specificed group.'),
         'handler' => 'simple_access_views_plugin_group',
         'uses options' => TRUE,
-        'path' => drupal_get_path('module', 'simple_access') .'/views',
+        'path' => drupal_get_path('module', 'simple_access') . '/views',
       ),
     ),
   );

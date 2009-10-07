@@ -7,17 +7,17 @@
  */
 
 /**
- * Implementation of hook_install()
+ * Implements hook_install().
  */
 function simple_access_install() {
   drupal_install_schema('simple_access');
   db_query("UPDATE {system} SET weight = 9 WHERE name = '%s'", 'simple_access');
-  
-  drupal_set_message(t('simple access has created the required tables.'));
+
+  drupal_set_message(st('simple access has created the required tables.'));
 }
 
-/** 
- * Implementation of hook_uninstall()
+/**
+ * Implements hook_uninstall().
  */
 function simple_access_uninstall() {
   drupal_uninstall_schema('simple_access');
@@ -27,14 +27,14 @@ function simple_access_uninstall() {
 }
 
 /**
- * Implementation of hook_enable
- */ 
+ * Implements hook_enable().
+ */
 function simple_access_enable() {
   drupal_set_message(t('To fully activate simple_access you also need to !rebuild_permissions.', array('!rebuild_permissions' => l(t('rebuild permissions'), 'admin/content/node-settings'))));
 }
 
 /**
- * Implementation of hook_disable()
+ * Implements hook_disable().
  */
 function simple_access_disable() {
   drupal_set_message(t('To fully disable simple_access you also need to !rebuild_permissions.', array('!rebuild_permissions' => l(t('rebuild permissions'), 'admin/content/node-settings'))));
@@ -44,7 +44,7 @@ function simple_access_schema() {
   $schema = array();
 
   $schema['simple_access_node'] = array(
-    'description' => t('Define all permissions for each node'),
+    'description' => 'Define all permissions for each node',
     'fields' => array(
       'nid' => array(
         'type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE,
@@ -71,16 +71,16 @@ function simple_access_schema() {
   );
   $schema['simple_access_owner'] = array(
     'fields' => array(
-       'nid' => array('type' => 'int', 'unsigned' => TRUE, 
+       'nid' => array('type' => 'int', 'unsigned' => TRUE,
          'not null' => TRUE, 'default' => 0, 'disp-width' => '10'),
-       'sa_view' => array('type' => 'int', 'unsigned' => TRUE, 
-         'size' => 'tiny', 'not null' => TRUE, 'default' => 0, 
+       'sa_view' => array('type' => 'int', 'unsigned' => TRUE,
+         'size' => 'tiny', 'not null' => TRUE, 'default' => 0,
          'disp-width' => '3'),
-       'sa_update' => array('type' => 'int', 'unsigned' => TRUE, 
-         'size' => 'tiny', 'not null' => TRUE, 'default' => 0, 
+       'sa_update' => array('type' => 'int', 'unsigned' => TRUE,
+         'size' => 'tiny', 'not null' => TRUE, 'default' => 0,
          'disp-width' => '3'),
-       'sa_delete' => array('type' => 'int', 'unsigned' => TRUE, 
-         'size' => 'tiny', 'not null' => TRUE, 'default' => 0, 
+       'sa_delete' => array('type' => 'int', 'unsigned' => TRUE,
+         'size' => 'tiny', 'not null' => TRUE, 'default' => 0,
          'disp-width' => '3')),
     'primary key' => array('nid'),
   );
@@ -180,7 +180,7 @@ function simple_access_update_5() {
 
 function simple_access_update_7() {
   $ret = array();
-  db_change_field($ret, 'simple_access_groups', 'weight', 'weight', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0,));
+  db_change_field($ret, 'simple_access_groups', 'weight', 'weight', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
 
   return $ret;
 }
@@ -190,7 +190,7 @@ function simple_access_update_7() {
  */
 function simple_access_update_6200() {
   $ret = array();
-  
+
   if (!db_table_exists('simple_access_profiles')) {
     db_create_table($ret, 'simple_access_profiles', array(
       'fields' => array(
@@ -245,7 +245,7 @@ function simple_access_update_6200() {
       'primary keys' => array('nid', 'pid'),
     ));
   }
-  
+
   return $ret;
 }
 
@@ -254,8 +254,8 @@ function simple_access_update_6200() {
  */
 function simple_access_update_6201() {
   $ret = array();
-  
+
   $ret[] = update_sql("UPDATE {system} SET weight = 9 WHERE name = 'simple_access'");
-  
+
   return $ret;
 }
