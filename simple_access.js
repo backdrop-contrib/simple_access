@@ -1,10 +1,16 @@
-Drupal.verticalTabs = Drupal.verticalTabs || {};
+// $Id$
 
-Drupal.verticalTabs.sa = function() {
-  if (!$('.vertical-tabs-sa .form-checkbox:checked').size()) {
-    return Drupal.t('Public access');
+(function ($) {
+
+Drupal.behaviors.saFieldsetSummaries = {
+  attach: function (context) {
+    if (!$('#edit-sa .form-checkbox:checked').size()) {
+      return Drupal.t('Public access');
+    }
+    else {
+      return Drupal.t('Restricted access');
+    }
   }
-  else {
-    return Drupal.t('Restricted access');
-  }
-}
+};
+
+})(jQuery);

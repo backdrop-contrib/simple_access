@@ -180,26 +180,26 @@ function simple_access_node_prepare($node) {
  */
 function simple_access_node_load($nodes, $types) {
   foreach ($nodes as $node) {
-    if ($row = db_fetch_array(db_query('SELECT no.sa_view, no.sa_update, no.sa_delete FROM {simple_access_owner} no WHERE no.nid = %d', $node->nid))) {
+    
+    if ($row = db_select('simple_access_owner', 'o')->fields('o', array('sa_view', 'sa_update', 'sa_delete'))->condition('nid', $node->nid)->execute()->fetchAssoc()) {
       $node->simple_access_owner = $row;
     }
     else {
       $node->simple_access_owner = array('sa_view' => 0, 'sa_update' => 0, 'sa_delete' => 0);
     }
 
-    $extra = array();
-    $result = db_query('SELECT na.gid, na.sa_view, na.sa_update, na.sa_delete FROM {simple_access_node} na WHERE na.nid = %d', $node->nid);
-    while ($grant = db_fetch_array($result)) {
-      $gid = $grant['gid'];
-      unset($grant['gid']);
-      $extra[$gid] = $grant;
-    }
-    $node->simple_access = $extra;
+    $node->simple_access = db_select('simple_access_node', 'na')
+      ->fields('na', array('gid', 'sa_view', 'sa_update', 'sa_delete'))
+      ->condition('nid', $node->nid)
+      ->execute()
+      ->fetchAllAssoc('gid', PDO::FETCH_ASSOC);
 
-    $result = db_query('SELECT pid FROM {simple_access_profiles_node} WHERE nid = %d', $node->nid);
-    while ($row = db_fetch_array($result)) {
-      $node->simple_access_profiles[] = $row['pid'];
-    }
+    $node->simple_access_profiles = db_select('simple_access_profiles_node', 'pn')
+      ->fields('pn', array('pid'))
+      ->condition('nid', $node->nid)
+      ->execute()
+      ->fetchAllAssoc('pid', PDO::FETCH_ASSOC);
+
     $nodes[$node->nid] = $node;
   }
 }
@@ -224,15 +224,18 @@ function simple_access_node_update($node) {
 function simple_access_node_save($node) {
   if ($node->uid && ($node->simple_access_owner['sa_view'] || $node->simple_access_owner['sa_update'] || $node->simple_access_owner['sa_update'])) {
     $node->simple_access_owner['nid'] = $node->nid;
-    drupal_write_record('simple_access_owner', $node->simple_access_owner, array('nid'));
-    if (!db_affected_rows()) {
+    if (!drupal_write_record('simple_access_owner', $node->simple_access_owner, array('nid'))) {
       drupal_write_record('simple_access_owner', $node->simple_access_owner);
     }
   }
   else {
-    db_query('DELETE FROM {simple_access_owner} WHERE nid = %d', $node->nid);
+    db_delete('simple_access_owner')
+      ->condition('nid', $node->nid)
+      ->execute();
   }
-  db_query('DELETE FROM {simple_access_node} WHERE nid = %d', $node->nid);
+  db_delete('simple_access_node')
+    ->condition('nid', $node->nid)
+    ->execute();
   if (isset($node->simple_access)) {
     foreach ($node->simple_access as $gid => $access) {
       if ($access['sa_view'] || $access['sa_update'] || $access['sa_delete']) {
@@ -243,7 +246,9 @@ function simple_access_node_save($node) {
     }
   }
 
-  db_query('DELETE FROM {simple_access_profiles_node} WHERE nid = %d', $node->nid);
+  db_delete('simple_access_profiles_node')
+    ->condition('nid', $node->nid)
+    ->execute();
   if (isset($node->simple_access_profiles)) {
     foreach (array_filter($node->simple_access_profiles) as $pid) {
       $data = array(
@@ -259,9 +264,11 @@ function simple_access_node_save($node) {
  * Implements hook_node_delete().
  */
 function simple_access_node_delete($node) {
-  db_query('DELETE FROM {simple_access_node} WHERE nid = %d', $node->nid);
-  db_query('DELETE FROM {simple_access_owner} WHERE nid = %d', $node->nid);
-  db_query('DELETE FROM {simple_access_profiles_node} WHERE nid = %d', $node->nid);
+  foreach (array('simple_access_node', 'simple_access_owner', 'simple_access_profiles_node') as $table) {
+    db_delete($table)
+      ->condition('pid', $pid)
+      ->execute();
+  }
 }
 
 /**
@@ -374,20 +381,6 @@ function simple_access_form_alter(&$form, &$form_state, $form_id) {
   if (!empty($form['#node_edit_form'])) {
     if ($simple_access_form = simple_access_form($form['#node'])) {
       $form = array_merge($form, $simple_access_form);
-
-      if (module_exists('vertical_tabs')) {
-        global $conf;
-
-        drupal_add_js(drupal_get_path('module', 'simple_access') . '/simple_access.js');
-
-        if (!isset($conf['vertical_tabs_fieldsets_' . $form['type']['#value']])) {
-          $conf['vertical_tabs_fieldsets_' . $form['type']['#value']] = vertical_tabs_fieldsets($form['type']['#value']);
-          $conf['vertical_tabs_fieldsets_' . $form['type']['#value']][] = 'sa';
-        }
-        elseif (!in_array('simple-access', $conf['vertical_tabs_fieldsets_' . $form['type']['#value']])) {
-          $conf['vertical_tabs_fieldsets_' . $form['type']['#value']][] = 'sa';
-        }
-      }
     }
   }
 }
@@ -453,9 +446,13 @@ function simple_access_form($node, $admin = FALSE) {
     '#collapsed' => empty($user_groups) && empty($node->simple_access_profiles) && empty($owner_priv),
     '#access' => user_access('assign access to profiles') || user_access('assign access to nodes') || user_access('administer nodes'),
     '#attributes' => array(
-      'class' => 'simple-access-settings',
+      'class' => array('simple-access-settings'),
     ),
     '#weight' => (module_exists('content') && isset($form['type'])) ? content_extra_field_weight($form['type']['#value'], 'sa') : 20,
+    '#group' => 'additional_settings',
+    '#attached' => array(
+      'js' => array(drupal_get_path('module', 'simple_access') . '/simple_access.js'),
+    ),
   );
   if (!empty($profiles)) {
     $form['sa']['simple_access_profiles'] = array(
