@@ -10,7 +10,6 @@
  * Implements hook_install().
  */
 function simple_access_install() {
-  drupal_install_schema('simple_access');
   db_update('system')
     ->fields(array('weight' => 9))
     ->condition('name', 'simple_access')
@@ -23,7 +22,6 @@ function simple_access_install() {
  * Implements hook_uninstall().
  */
 function simple_access_uninstall() {
-  drupal_uninstall_schema('simple_access');
   variable_del('sa_display');
   variable_del('sa_showgroups');
   drupal_set_message(t('simple access has been uninstalled'));

@@ -8,6 +8,7 @@
 function theme_simple_access_form($form) {
   drupal_add_css(drupal_get_path('module', 'simple_access') . '/simple_access.css');
 
+  $options = array();
   $output = '';
   if (isset($form['#admin'])) {
     $variable = array('view' => 1, 'update' => 1, 'delete' => 1);
@@ -15,87 +16,96 @@ function theme_simple_access_form($form) {
   else {
     $variable = variable_get('sa_display', array('view' => 1));
   }
-  $head = array(t('Access Group'));
+  $options['header'] = array(t('Access Group'));
   if ((isset($variable['view']) && $variable['view']) || isset($form['#admin'])) {
-    $head[] = t('View');
+    $options['header'][] = t('View');
   }
   if ((isset($variable['update']) && $variable['update']) || isset($form['#admin'])) {
-    $head[] = t('Update');
+    $options['header'][] = t('Update');
   }
   if ((isset($variable['delete']) && $variable['delete']) || isset($form['#admin'])) {
-    $head[] = t('Delete');
+    $options['header'][] = t('Delete');
   }
 
-  foreach (element_children($form) as $gid) {
+  foreach (element_children($form['form']) as $gid) {
     if (!isset($form['#access']) || $form['#access']) {
       $row = array(
-        array('data' => drupal_render($form[$gid]['name'])),
+        array('data' => drupal_render($form['form'][$gid]['name'])),
       );
       if ((isset($variable['view']) && $variable['view']) || isset($form['#admin'])) {
         $row[] = array(
-          'data' => drupal_render($form[$gid]['sa_view']),
+          'data' => drupal_render($form['form'][$gid]['sa_view']),
         );
       }
       if ((isset($variable['update']) && $variable['update']) || isset($form['#admin'])) {
         $row[] = array(
-          'data' => drupal_render($form[$gid]['sa_update']),
+          'data' => drupal_render($form['form'][$gid]['sa_update']),
         );
       }
       if ((isset($variable['delete']) && $variable['delete']) || isset($form['#admin'])) {
         $row[] = array(
-          'data' => drupal_render($form[$gid]['sa_delete']),
+          'data' => drupal_render($form['form'][$gid]['sa_delete']),
         );
       }
 
-      $rows[] = $row;
+      $options['rows'][] = $row;
     }
   }
 
-  if (!empty($rows)) {
-    $output .= theme('table', $head, $rows);
-    $output .= drupal_render($form);
+  if (!empty($options['rows'])) {
+    $output .= theme('table', $options);
     return $output;
   }
 }
 
-function theme_simple_access_page_overview($form) {
+function theme_simple_access_page_overview_list(&$form) {
   drupal_add_tabledrag('sa-group-list', 'order', 'sibling', 'sa-group-weight');
-  $header = array(t('Group'), t('Roles'), t('Weight'), t('Operations'));
-  foreach (element_children($form['groups']) as $gid) {
-    $rows[] = array(
+  $output = '';
+  $options = array(
+    'header' => array(t('Group'), t('Roles'), t('Weight'), t('Operations')),
+    'rows' => array(),
+    'attributes' => array('id' => 'sa-group-list'),
+  );
+  
+  foreach (element_children($form['form'], TRUE) as $gid) {
+    $options['rows'][] = array(
       'data' => array(
-        drupal_render($form['groups'][$gid]['name']),
-        array('data' => drupal_render($form['groups'][$gid]['roles']), 'class' => 'sa-group-roles'),
-        drupal_render($form['groups'][$gid]['weight']),
-        drupal_render($form['groups'][$gid]['ops']),
+        drupal_render($form['form'][$gid]['name']),
+        array('data' => drupal_render($form['form'][$gid]['roles']), 'class' => 'sa-group-roles'),
+        drupal_render($form['form'][$gid]['weight']),
+        drupal_render($form['form'][$gid]['ops']),
       ),
-      'class' => 'draggable',
+      'class' => array('draggable'),
     );
   }
-  $output .= theme('table', $header, $rows, array('id' => 'sa-group-list'));
-  $output .= drupal_render($form);
-
+  
+  $output .= theme('table', $options);
+  
   return $output;
 }
 
 function theme_simple_access_profile_list($form) {
   drupal_add_tabledrag('sa-profile-list', 'order', 'sibling', 'sa-profile-weight');
-  $head = array(t('Name'), t('Weight'), t('Operations'));
-  $rows = array();
+  $options = array(
+    'header' => array(t('Name'), t('Weight'), t('Operations')),
+    'rows' => array(),
+    'attributes' => array('id' => 'sa-profile-list'),
+  );
+  $output = '';
 
-  foreach (element_children($form['profiles']) as $id) {
-    $rows[] = array(
+  foreach (element_children($form['form']['profiles']) as $id) {
+    $options['rows'][] = array(
       'data' => array(
-        array('data' => drupal_render($form['profiles'][$id]['name'])),
-        array('data' => drupal_render($form['profiles'][$id]['weight'])),
-        array('data' => drupal_render($form['profiles'][$id]['operations'])),
+        array('data' => drupal_render($form['form']['profiles'][$id]['name'])),
+        array('data' => drupal_render($form['form']['profiles'][$id]['weight'])),
+        array('data' => drupal_render($form['form']['profiles'][$id]['operations'])),
       ),
-      'class' => 'draggable',
+      'class' => array('draggable'),
     );
   }
 
-  if (empty($rows)) {
-    $rows[] = array(
+  if (empty($data['rows'])) {
+    $data['rows'][] = array(
       array(
         'data' => t('No profiles defined'),
         'colspan' => 3,
@@ -103,8 +113,7 @@ function theme_simple_access_profile_list($form) {
       ),
     );
   }
-  $output .= theme('table', $head, $rows, array('id' => 'sa-profile-list'));
-  $output .= drupal_render($form);
+  $output .= theme('table', $options);
 
   return $output;
 }
