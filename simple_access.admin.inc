@@ -50,8 +50,12 @@ function simple_access_page_overview() {
 
 function simple_access_page_overview_submit($form, &$form_state) {
   foreach ($form_state['values']['groups'] as $gid => $group) {
-    $group['gid'] = $gid;
-    drupal_write_record('simple_access_groups', $group, array('gid'));
+    db_update('simple_access_groups')
+      ->condition('gid', $gid)
+      ->fields(array(
+        'weight' => $group['weight'],
+      ))
+      ->execute();
   }
 }
 

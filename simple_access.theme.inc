@@ -66,7 +66,6 @@ function theme_simple_access_page_overview_list(&$form) {
     'rows' => array(),
     'attributes' => array('id' => 'sa-group-list'),
   );
-  
   foreach (element_children($form['form'], TRUE) as $gid) {
     $options['rows'][] = array(
       'data' => array(

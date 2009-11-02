@@ -224,8 +224,23 @@ function simple_access_node_update($node) {
 function simple_access_node_save($node) {
   if ($node->uid && ($node->simple_access_owner['sa_view'] || $node->simple_access_owner['sa_update'] || $node->simple_access_owner['sa_update'])) {
     $node->simple_access_owner['nid'] = $node->nid;
-    if (!drupal_write_record('simple_access_owner', $node->simple_access_owner, array('nid'))) {
-      drupal_write_record('simple_access_owner', $node->simple_access_owner);
+    $query = db_update('simple_access_owner')
+      ->fields(array(
+        'sa_view' => $access['sa_view'],
+        'sa_update' => $access['sa_update'],
+        'sa_delete' => $access['sa_delete'],
+      ))
+      ->condition('nid', $node->nid)
+      ->execute();
+    if (!$query->rowCount()) {
+      db_insert('simple_access_owner')
+        ->fields(array(
+          'nid' => $node->nid,
+          'sa_view' => $access['sa_view'],
+          'sa_update' => $access['sa_update'],
+          'sa_delete' => $access['sa_delete'],
+        ))
+        ->execute();
     }
   }
   else {
@@ -239,9 +254,15 @@ function simple_access_node_save($node) {
   if (isset($node->simple_access)) {
     foreach ($node->simple_access as $gid => $access) {
       if ($access['sa_view'] || $access['sa_update'] || $access['sa_delete']) {
-        $access['nid'] = $node->nid;
-        $access['gid'] = $gid;
-        drupal_write_record('simple_access_node', $access);
+        db_insert('simple_access_node')
+          ->fields(array(
+            'nid' => $node->nid,
+            'gid' => $gid,
+            'sa_view' => $access['sa_view'],
+            'sa_update' => $access['sa_update'],
+            'sa_delete' => $access['sa_delete'],
+          ))
+          ->execute();
       }
     }
   }
@@ -251,11 +272,12 @@ function simple_access_node_save($node) {
     ->execute();
   if (isset($node->simple_access_profiles)) {
     foreach (array_filter($node->simple_access_profiles) as $pid) {
-      $data = array(
-        'nid' => $node->nid,
-        'pid' => $pid,
-      );
-      drupal_write_record('simple_access_profiles_node', $data);
+      db_insert('simple_access_profiles_node')
+        ->fields(array(
+          'nid' => $node->nid,
+          'pid' => $pid,
+        ))
+        ->execute();
     }
   }
 }
@@ -410,15 +432,15 @@ function simple_access_node_type_submit(&$form, &$form_state) {
 function simple_access_theme() {
   return array(
     'simple_access_form' => array(
-      'arguments' => array('form' => NULL),
+      'render element' => 'form',
       'file' => 'simple_access.theme.inc',
     ),
     'simple_access_page_overview_list' => array(
-      'arguments' => array('form' => NULL),
+      'render element' => 'form',
       'file' => 'simple_access.theme.inc',
     ),
     'simple_access_profile_list' => array(
-      'arguments' => array('form' => NULL),
+      'render element' => 'form',
       'file' => 'simple_access.theme.inc',
     ),
   );
@@ -688,11 +710,23 @@ function simple_access_groups_check_user($groups) {
  * Save group of roles into the database
  */
 function simple_access_save_group($edit) {
-  if (empty($edit['gid'])) {
-    drupal_write_record('simple_access_groups', $edit);
+  $affected = 0;
+  if (!empty($edit['gid'])) {
+    $affected = db_update('simple_access_groups')
+      ->condition('gid', $edit['gid'])
+      ->fields(array(
+        'name' => $edit['name'],
+        'weight' => $edit['weight'],
+      ))
+      ->execute();
   }
-  else {
-    drupal_write_record('simple_access_groups', $edit, array('gid'));
+  if (!$affected) {
+    $edit['gid'] = db_insert('simple_access_groups', array('return' => Database::RETURN_INSERT_ID))
+      ->fields(array(
+        'name' => $edit['name'],
+        'weight' => $edit['weight'],
+      ))
+      ->execute();
   }
   db_delete('simple_access_roles')
     ->condition('gid', $edit['gid'])
@@ -700,8 +734,12 @@ function simple_access_save_group($edit) {
   if (is_array($edit['roles'])) {
     foreach ($edit['roles'] as $key => $value) {
       if ($value) {
-        $record = array('rid' => $key, 'gid' => $edit['gid']);
-        drupal_write_record('simple_access_roles', $record);
+        db_insert('simple_access_roles')
+          ->fields(array(
+            'rid' => $key,
+            'gid' => $edit['gid']
+          ))
+          ->execute();
       }
     }
   }
