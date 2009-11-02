@@ -224,24 +224,14 @@ function simple_access_node_update($node) {
 function simple_access_node_save($node) {
   if ($node->uid && ($node->simple_access_owner['sa_view'] || $node->simple_access_owner['sa_update'] || $node->simple_access_owner['sa_update'])) {
     $node->simple_access_owner['nid'] = $node->nid;
-    $query = db_update('simple_access_owner')
+    $query = db_merge('simple_access_owner')
+      ->key(array('nid' => $node->nid))
       ->fields(array(
         'sa_view' => $access['sa_view'],
         'sa_update' => $access['sa_update'],
         'sa_delete' => $access['sa_delete'],
       ))
-      ->condition('nid', $node->nid)
       ->execute();
-    if (!$query->rowCount()) {
-      db_insert('simple_access_owner')
-        ->fields(array(
-          'nid' => $node->nid,
-          'sa_view' => $access['sa_view'],
-          'sa_update' => $access['sa_update'],
-          'sa_delete' => $access['sa_delete'],
-        ))
-        ->execute();
-    }
   }
   else {
     db_delete('simple_access_owner')
@@ -712,15 +702,15 @@ function simple_access_groups_check_user($groups) {
 function simple_access_save_group($edit) {
   $affected = 0;
   if (!empty($edit['gid'])) {
-    $affected = db_update('simple_access_groups')
-      ->condition('gid', $edit['gid'])
+    db_merge('simple_access_groups')
+      ->key(array('gid' => $edit['gid']))
       ->fields(array(
         'name' => $edit['name'],
         'weight' => $edit['weight'],
       ))
       ->execute();
   }
-  if (!$affected) {
+  else {
     $edit['gid'] = db_insert('simple_access_groups', array('return' => Database::RETURN_INSERT_ID))
       ->fields(array(
         'name' => $edit['name'],
