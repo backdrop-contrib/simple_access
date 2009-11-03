@@ -223,20 +223,19 @@ function simple_access_node_update($node) {
  */
 function simple_access_node_save($node) {
   if ($node->uid && ($node->simple_access_owner['sa_view'] || $node->simple_access_owner['sa_update'] || $node->simple_access_owner['sa_update'])) {
-    $node->simple_access_owner['nid'] = $node->nid;
     $query = db_merge('simple_access_owner')
       ->key(array('nid' => $node->nid))
       ->fields(array(
-        'sa_view' => $access['sa_view'],
-        'sa_update' => $access['sa_update'],
-        'sa_delete' => $access['sa_delete'],
+        'sa_view' => $node->simple_access_owner['sa_view'],
+        'sa_update' => $node->simple_access_owner['sa_update'],
+        'sa_delete' => $node->simple_access_owner['sa_delete'],
       ))
       ->execute();
   }
   else {
     db_delete('simple_access_owner')
       ->condition('nid', $node->nid)
-      ->execute();
+      ->execute(); 
   }
   db_delete('simple_access_node')
     ->condition('nid', $node->nid)
