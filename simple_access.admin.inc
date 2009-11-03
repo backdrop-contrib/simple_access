@@ -133,10 +133,16 @@ function simple_access_profile_list() {
     ->orderBy('name', 'ASC')
     ->execute();
 
+  $profiles = $result->fetchAllAssoc('pid', PDO::FETCH_ASSOC);
+  if (empty($profiles)) {
+    drupal_set_message(t('You have not yet defined any access profiles.'));
+    drupal_goto('admin/config/simple-access/profiles/add');
+  }
+  
   $form['profiles'] = array(
     '#tree' => TRUE,
   );
-  while ($row = $result->fetchAssoc(PDO::FETCH_ASSOC)) {
+  foreach ($profiles as $row) {
     $form['profiles'][$row['pid']]['name'] = array(
       '#markup' => $row['name'],
     );
@@ -166,10 +172,9 @@ function simple_access_profile_list_submit($form, $form_state) {
 }
 
 function simple_access_profile_form($form, $form_state, $profile = array()) {
-  $form = array();
   $profile += array('access' => FALSE);
 
-  if (!empty($profile)) {
+  if (!empty($profile['pid'])) {
     $form['pid'] = array(
       '#type' => 'value',
       '#value' => $profile['pid'],
