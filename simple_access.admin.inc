@@ -59,7 +59,7 @@ function simple_access_page_overview_submit($form, &$form_state) {
   }
 }
 
-function simple_access_group_form(&$form, &$form_state, $group = array()) {
+function simple_access_group_form($form, &$form_state, $group = array()) {
   $roles = array();
   if (!empty($group)) {
     drupal_set_title(t('Edit Access Group'));
