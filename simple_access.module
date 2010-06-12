@@ -539,17 +539,17 @@ function simple_access_form_row($gid, $group, $access, $admin = FALSE) {
   );
   $form['sa_view'] = array(
     '#type' => 'checkbox',
-    '#default_value' => $access[$gid]['sa_view'],
+    '#default_value' => isset($access[$gid]['sa_view']) ? $access[$gid]['sa_view'] : 0,
     '#access' => $priv && $variable['view'],
   );
   $form['sa_update'] = array(
     '#type' => 'checkbox',
-    '#default_value' => $access[$gid]['sa_update'],
+    '#default_value' => isset($access[$gid]['sa_update']) ? $access[$gid]['sa_update'] : 0,
     '#access' => $priv && $variable['update'],
   );
   $form['sa_delete'] = array(
     '#type' => 'checkbox',
-    '#default_value' => $access[$gid]['sa_delete'],
+    '#default_value' => isset($access[$gid]['sa_delete']) ? $access[$gid]['sa_delete']: 0,
     '#access' => $priv && $variable['delete'],
   );
 
