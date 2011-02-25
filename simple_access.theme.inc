@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Provide themes for simple access administration

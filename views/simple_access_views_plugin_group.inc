@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 class simple_access_views_plugin_group extends views_plugin_access {
   function access($account) {
