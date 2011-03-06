@@ -86,21 +86,13 @@ function simple_access_menu() {
     'description' => 'Maintain access profiles',
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/simple-access/profiles/list'] = array(
-    'title' => 'List',
-    'access callback' => 'user_access',
-    'access arguments' => array('manage simple access'),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-    'weight' => -9,
-    'file' => 'simple_access.admin.inc',
-  );
   $items['admin/config/simple-access/profiles/add'] = array(
     'title' => 'Add',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('simple_access_profile_form'),
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_LOCAL_ACTION,
     'file' => 'simple_access.admin.inc',
   );
   $items['admin/config/simple-access/profiles/%simple_access_profile/edit'] = array(
