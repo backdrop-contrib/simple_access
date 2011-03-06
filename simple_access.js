@@ -1,14 +1,16 @@
 
 (function ($) {
 
-Drupal.behaviors.saFieldsetSummaries = {
+Drupal.behaviors.simple_accessFieldsetSummaries = {
   attach: function (context) {
-    if (!$('#edit-sa .form-checkbox:checked').size()) {
-      return Drupal.t('Public access');
-    }
-    else {
-      return Drupal.t('Restricted access');
-    }
+    $('fieldset#edit-simple-access').drupalSetSummary(function (context) {
+      if (!$('.form-checkbox:checked', context).size()) {
+        return Drupal.t('Public access');
+      }
+      else {
+        return Drupal.t('Restricted access');
+      }
+    });
   }
 };
 

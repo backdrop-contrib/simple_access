@@ -370,12 +370,9 @@ function simple_access_node_access_explain($row) {
   }
 }
 
-function simple_access_form_alter(&$form, &$form_state, $form_id) {
-  // if this is a node form...
-  if (!empty($form['#node_edit_form'])) {
-    if ($simple_access_form = simple_access_form($form['#node'])) {
-      $form = array_merge($form, $simple_access_form);
-    }
+function simple_access_form_node_form_alter(&$form, &$form_state, $form_id) {
+  if ($simple_access_form = simple_access_form($form_state['node'])) {
+    $form = array_merge($form, $simple_access_form);
   }
 }
 
@@ -433,7 +430,7 @@ function simple_access_form($node, $admin = FALSE) {
   $user_groups = is_array($node->simple_access) ? array_filter($node->simple_access, '_simple_access_filter_access') : array();
   $owner_priv = is_array($node->simple_access_owner) ? array_filter($node->simple_access_owner) : array();
   // set up the outer fieldset
-  $form['sa'] = array(
+  $form['simple_access'] = array(
     '#title' => t('Access'),
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -442,14 +439,14 @@ function simple_access_form($node, $admin = FALSE) {
     '#attributes' => array(
       'class' => array('simple-access-settings'),
     ),
-    '#weight' => (module_exists('content') && isset($form['type'])) ? content_extra_field_weight($form['type']['#value'], 'sa') : 20,
+    '#weight' => 20,
     '#group' => 'additional_settings',
     '#attached' => array(
       'js' => array(drupal_get_path('module', 'simple_access') . '/simple_access.js'),
     ),
   );
   if (!empty($profiles)) {
-    $form['sa']['simple_access_profiles'] = array(
+    $form['simple_access']['simple_access_profiles'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Access profile'),
       '#default_value' => $node->simple_access_profiles,
@@ -458,7 +455,7 @@ function simple_access_form($node, $admin = FALSE) {
     );
   }
   if (!empty($groups) || user_access('assign owner permissions')) {
-    $form['sa']['simple_access'] = array(
+    $form['simple_access']['simple_access'] = array(
       '#tree' => TRUE,
       '#weight' => 5,
       '#access' => user_access('assign access to nodes') || user_access('administer nodes') || user_access('assign owner permissions'),
@@ -466,7 +463,7 @@ function simple_access_form($node, $admin = FALSE) {
     );
 
     if ($admin) {
-      $form['sa']['simple_access']['#admin'] = TRUE;
+      $form['simple_access']['simple_access']['#admin'] = TRUE;
     }
 
     // Load the owner perminisions.
@@ -475,15 +472,15 @@ function simple_access_form($node, $admin = FALSE) {
       'access' => user_access('assign owner permissions') && isset($node->uid) && $node->uid,
     );
     $access = array('owner' => $node->simple_access_owner);
-    $form['sa']['simple_access']['owner'] = simple_access_form_row('owner', $group, $access, $admin);
-    $form['sa']['simple_access']['owner']['#parents'] = array('simple_access_owner');
+    $form['simple_access']['simple_access']['owner'] = simple_access_form_row('owner', $group, $access, $admin);
+    $form['simple_access']['simple_access']['owner']['#parents'] = array('simple_access_owner');
 
     // See what form elements we should include. If not configured,
     // only enable the 'view' elements by default.
     $variable = variable_get('sa_display', array('view' => 1));
 
     foreach ($groups as $gid => $group) {
-      $form['sa']['simple_access'][$gid] = simple_access_form_row($gid, $group, $node->simple_access, $admin);
+      $form['simple_access']['simple_access'][$gid] = simple_access_form_row($gid, $group, $node->simple_access, $admin);
     }
   }
   return $form;
