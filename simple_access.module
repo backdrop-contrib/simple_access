@@ -260,7 +260,7 @@ function simple_access_node_save($node) {
 function simple_access_node_delete($node) {
   foreach (array('simple_access_node', 'simple_access_owner', 'simple_access_profiles_node') as $table) {
     db_delete($table)
-      ->condition('pid', $pid)
+      ->condition('nid', $node->nid)
       ->execute();
   }
 }
