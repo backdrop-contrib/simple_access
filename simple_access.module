@@ -382,7 +382,7 @@ function simple_access_form_node_type_form_alter(&$form, &$form_state) {
 
   $tmp_form = simple_access_form((object)$default, TRUE);
 
-  $form['simple_access'] = $tmp_form['sa'];
+  $form['simple_access'] = $tmp_form['simple_access'];
   $form['simple_access']['simple_access']['owner']['#parents'] = array('simple_access', 'simple_access_owner');
   $form['simple_access']['#tree'] = TRUE;
 
