@@ -32,7 +32,7 @@ function simple_access_page_overview() {
         '#attributes' => array('class' => array('sa-group-weight')),
       );
       $form['groups'][$gid]['ops'] = array(
-        '#markup' => l(t('edit'), 'admin/config/simple-access/groups/' . $gid . '/edit/') . '&nbsp;' . l(t('delete'), 'admin/config/simple-access/groups/' . $gid . '/delete'),
+        '#markup' => l(t('edit'), 'admin/config/simple-access/groups/' . $gid . '/edit') . '&nbsp;' . l(t('delete'), 'admin/config/simple-access/groups/' . $gid . '/delete'),
       );
     }
     $form['submit'] = array(
