@@ -614,7 +614,7 @@ function simple_access_group_select() {
 
   if (empty($groups)) {
     global $user;
-    $default_access = user_access('administer nodes');
+    $default_access = user_access('administer nodes') || variable_get('sa_showgroups', FALSE);
 
     $groups = array();
     $result = db_select('simple_access_groups', 'g')
