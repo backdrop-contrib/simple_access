@@ -631,12 +631,12 @@ function simple_access_group_select() {
     if (!$default_access) {
     // return just groups for which user is a member
       $roles = array_keys($user->roles);
-      $result = db_select('simple_access_groups', 'g')
+      $query = db_select('simple_access_groups', 'g')
         ->fields('g', array('gid'))
-        ->innerJoin('simple_access_roles', 'r', 'g.gid = r.gid')
         ->condition('rid', $roles, 'IN')
-        ->groupBy('gid')
-        ->execute();
+        ->groupBy('gid');
+      $query->innerJoin('simple_access_roles', 'r', 'g.gid = r.gid');
+      $result = $query->execute();
       while ($group = $result->fetchAssoc(PDO::FETCH_ASSOC)) {
         $groups[$group['gid']]['access'] = TRUE;
       }
