@@ -121,7 +121,7 @@ function simple_access_menu() {
  */
 function simple_access_permission() {
   return array(
-    'Administer simple access' => array(
+    'manage simple access' => array(
       'title' => t('Administer Simple Access'),
       'description' => t('Allow access to administration pages for simple access.'),
     ),
