@@ -163,7 +163,7 @@ function simple_access_node_prepare($node) {
  */
 function simple_access_node_load($nodes, $types) {
   foreach ($nodes as $node) {
-    
+
     if ($row = db_select('simple_access_owner', 'o')->fields('o', array('sa_view', 'sa_update', 'sa_delete'))->condition('nid', $node->nid)->execute()->fetchAssoc()) {
       $node->simple_access_owner = $row;
     }
@@ -218,7 +218,7 @@ function simple_access_node_save($node) {
   else {
     db_delete('simple_access_owner')
       ->condition('nid', $node->nid)
-      ->execute(); 
+      ->execute();
   }
   db_delete('simple_access_node')
     ->condition('nid', $node->nid)
@@ -541,7 +541,7 @@ function simple_access_get_roles($gid) {
     ->fields('r', array('rid'))
     ->condition('gid', $gid)
     ->execute();
-  
+
   return array_keys($result->fetchAllAssoc('rid', PDO::FETCH_ASSOC));
 }
 
@@ -562,7 +562,7 @@ function simple_access_get_profiles($pid = NULL) {
     ->fields('p', array('pid', 'name'))
     ->orderBy('weight', 'ASC')
     ->orderBy('name');
-  
+
   if ($pid) {
     $query->condition('pid', $pid);
   }
@@ -573,12 +573,12 @@ function simple_access_get_profiles($pid = NULL) {
   $query = db_select('simple_access_profiles_access', 'a')
     ->fields('a', array('pid', 'gid', 'sa_view', 'sa_update', 'sa_delete'))
     ->orderBy('pid');
-  
+
   if ($pid) {
     $query->condition('pid', $pid);
   }
   $result = $query->execute();
-    
+
   while ($a = $result->fetchAssoc(PDO::FETCH_ASSOC)) {
     if (isset($profiles[$a['pid']])) {
       $profiles[$a['pid']]['access'][$a['gid']] = $a;
@@ -622,7 +622,7 @@ function simple_access_group_select() {
       ->orderBy('weight')
       ->orderBy('name')
       ->execute();
-      
+
     while ($group = $result->fetchAssoc(PDO::FETCH_ASSOC)) {
       $groups[$group['gid']] = $group;
       $groups[$group['gid']]['access'] = $default_access;
@@ -657,7 +657,7 @@ function simple_access_groups_from_roles($roles) {
     ->fields('r', array('gid'))
     ->condition('rid', $roles, 'IN')
     ->execute();
-  
+
   $gids = $result->fetchAllAssoc('gid', PDO::FETCH_ASSOC);
   return $gids;
 }
