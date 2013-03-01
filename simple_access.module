@@ -205,7 +205,12 @@ function simple_access_node_update($node) {
  * Save node information
  */
 function simple_access_node_save($node) {
-  if ($node->uid && ($node->simple_access_owner['sa_view'] || $node->simple_access_owner['sa_update'] || $node->simple_access_owner['sa_update'])) {
+  if (isset($node->simple_access_owner)) {
+    $node->simple_access_owner+= array(
+      'sa_view' => NULL, 'sa_update' => NULL, 'sa_delete' => NULL,
+    );
+  }
+  if ($node->uid && isset($node->simple_access_owner) && ($node->simple_access_owner['sa_view'] || $node->simple_access_owner['sa_update'] || $node->simple_access_owner['sa_update'])) {
     $query = db_merge('simple_access_owner')
       ->key(array('nid' => $node->nid))
       ->fields(array(
@@ -301,7 +306,12 @@ function simple_access_node_access_records($node) {
       }
     }
   }
-  if ($node->uid && ($node->simple_access_owner['sa_view'] || $node->simple_access_owner['sa_update'] || $node->simple_access_owner['sa_delete'])) {
+  if (isset($node->simple_access_owner)) {
+    $node->simple_access_owner+= array(
+      'sa_view' => NULL, 'sa_update' => NULL, 'sa_delete' => NULL,
+    );
+  }
+  if ($node->uid && (isset($node->simple_access_owner)) && ($node->simple_access_owner['sa_view'] || $node->simple_access_owner['sa_update'] || $node->simple_access_owner['sa_delete'])) {
     $records[] = array(
       'realm' => 'simple_access_author',
       'gid' => $node->uid,
