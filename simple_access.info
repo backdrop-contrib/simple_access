@@ -1,7 +1,7 @@
 name = Simple Access
 description = Provides simple hide/view access for nodes.
 core = 7.x
-package = Node Access
+package = Access control
 files[] = simple_access.module
 files[] = simple_access.install
 files[] = simple_access.admin.inc
