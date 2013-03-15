@@ -162,28 +162,44 @@ function simple_access_node_prepare($node) {
  * Implement hook_node_load().
  */
 function simple_access_node_load($nodes, $types) {
-  foreach ($nodes as $node) {
 
-    if ($row = db_select('simple_access_owner', 'o')->fields('o', array('sa_view', 'sa_update', 'sa_delete'))->condition('nid', $node->nid)->execute()->fetchAssoc()) {
-      $node->simple_access_owner = $row;
-    }
-    else {
+  $nids = array();
+  foreach ($nodes as $nid => $node) {
+    $nids[] = $nid;
+    $node->simple_access = array();
+    $node->simple_access_profiles = array();
+  }
+
+  $owners = db_select('simple_access_owner', 'o')
+    ->fields('o', array('nid', 'sa_view', 'sa_update', 'sa_delete'))
+    ->condition('nid', $nids)
+    ->execute()
+    ->fetchAllAssoc('nid', PDO::FETCH_ASSOC);
+
+  $access = db_select('simple_access_node', 'na')
+    ->fields('na', array('nid', 'gid', 'sa_view', 'sa_update', 'sa_delete'))
+    ->condition('nid', $nids)
+    ->execute()
+    ->fetchAll(PDO::FETCH_ASSOC);
+
+  $profiles = db_select('simple_access_profiles_node', 'pn')
+    ->fields('pn', array('nid', 'pid'))
+    ->condition('nid', $nids)
+    ->execute()
+    ->fetchAll(PDO::FETCH_ASSOC);
+
+  foreach ($nodes as $nid => $node) {
+    if (isset($owners[$nid])) {
+      $node->simple_access_owner = $owners[$nid];
+    } else {
       $node->simple_access_owner = array('sa_view' => 0, 'sa_update' => 0, 'sa_delete' => 0);
     }
-
-    $node->simple_access = db_select('simple_access_node', 'na')
-      ->fields('na', array('gid', 'sa_view', 'sa_update', 'sa_delete'))
-      ->condition('nid', $node->nid)
-      ->execute()
-      ->fetchAllAssoc('gid', PDO::FETCH_ASSOC);
-
-    $node->simple_access_profiles = db_select('simple_access_profiles_node', 'pn')
-      ->fields('pn', array('pid'))
-      ->condition('nid', $node->nid)
-      ->execute()
-      ->fetchAllAssoc('pid', PDO::FETCH_ASSOC);
-
-    $nodes[$node->nid] = $node;
+  }
+  foreach ($access as $row) {
+    $nodes[$row['nid']]->simple_access[$row['gid']] = $row;
+  }
+  foreach ($profiles as $row) {
+    $nodes[$row['nid']]->simple_access_profiles_node[$row['pid']] = $row;
   }
 }
 
