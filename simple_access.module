@@ -698,7 +698,7 @@ function simple_access_groups_check_user($groups) {
   $roles[] = $user->uid ? DRUPAL_AUTHENTICATED_RID : DRUPAL_ANONYMOUS_RID;
 
   $user_groups = simple_access_groups_from_roles($roles);
-  return array_intersect(array_filter($groups, $user_groups));
+  return array_intersect(array_filter($groups), $user_groups);
 }
 
 /**
