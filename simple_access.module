@@ -348,7 +348,7 @@ function simple_access_node_access_records($node) {
 function simple_access_node_grants($account, $op) {
   $gids = simple_access_groups_from_roles(array_keys($account->roles));
   $grants['simple_access'] = array_keys($gids);
-  
+
   if (in_array($op, array('view', 'update', 'delete')) && !empty($gids)) {
     $pids = db_select('simple_access_profiles_access', 'p')
       ->fields('p', array('pid'))
