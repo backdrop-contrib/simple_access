@@ -772,6 +772,7 @@ function simple_access_action_info() {
   return array(
     'simple_access_owner_grant' => array(
       'type' => 'node',
+      'label' => t('Grant permissions to content owner'),
       'description' => t('Grant permissions to content owner'),
       'configurable' => TRUE,
       'hooks' => array(
@@ -780,6 +781,7 @@ function simple_access_action_info() {
     ),
     'simple_access_owner_revoke' => array(
       'type' => 'node',
+      'label' => t('Revoke permissions from content owner'),
       'description' => t('Revoke permissions from content owner'),
       'configurable' => TRUE,
       'hooks' => array(
@@ -788,6 +790,7 @@ function simple_access_action_info() {
     ),
     'simple_access_group_grant' => array(
       'type' => 'node',
+      'label' => t('Grant permissions to groups'),
       'description' => t('Grant permissions to groups'),
       'configurable' => TRUE,
       'hooks' => array(
@@ -796,6 +799,7 @@ function simple_access_action_info() {
     ),
     'simple_access_group_revoke' => array(
       'type' => 'node',
+      'label' => t('Revoke permissions from groups'),
       'description' => t('Revoke permissions from groups'),
       'configurable' => TRUE,
       'hooks' => array(
@@ -804,6 +808,7 @@ function simple_access_action_info() {
     ),
     'simple_access_profile_enable' => array(
       'type' => 'node',
+      'label' => t('Enable access profile'),
       'description' => t('Enable access profile'),
       'configurable' => TRUE,
       'hooks' => array(
@@ -812,6 +817,7 @@ function simple_access_action_info() {
     ),
     'simple_access_profile_disable' => array(
       'type' => 'node',
+      'label' => t('Disable access profile'),
       'description' => t('Disable access profile'),
       'configurable' => TRUE,
       'hooks' => array(
