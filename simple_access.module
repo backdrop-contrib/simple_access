@@ -506,7 +506,7 @@ function simple_access_form($node, $admin = FALSE) {
 
     // See what form elements we should include. If not configured,
     // only enable the 'view' elements by default.
-    $variable = variable_get('sa_display', array('view' => 1));
+    $display = variable_get('sa_display', array('view' => 1, 'update' => 0, 'delete' => 0));
 
     foreach ($groups as $gid => $group) {
       $form['simple_access']['simple_access'][$gid] = simple_access_form_row($gid, $group, $node->simple_access, $admin);
@@ -517,10 +517,10 @@ function simple_access_form($node, $admin = FALSE) {
 
 function simple_access_form_row($gid, $group, $access, $admin = FALSE) {
   if ($admin) {
-    $variable = array('view' => 1, 'update' => 1, 'delete' => 1);
+    $display = array('view' => 1, 'update' => 1, 'delete' => 1);
   }
   else {
-    $variable = variable_get('sa_display', array(
+    $display = variable_get('sa_display', array(
       'view' => 1, 'update' => 0, 'delete' => 0)
     );
   }
@@ -549,17 +549,17 @@ function simple_access_form_row($gid, $group, $access, $admin = FALSE) {
   $form['sa_view'] = array(
     '#type' => 'checkbox',
     '#default_value' => isset($access[$gid]['sa_view']) ? $access[$gid]['sa_view'] : 0,
-    '#access' => $priv && $variable['view'],
+    '#access' => $priv && $display['view'],
   );
   $form['sa_update'] = array(
     '#type' => 'checkbox',
     '#default_value' => isset($access[$gid]['sa_update']) ? $access[$gid]['sa_update'] : 0,
-    '#access' => $priv && $variable['update'],
+    '#access' => $priv && $display['update'],
   );
   $form['sa_delete'] = array(
     '#type' => 'checkbox',
     '#default_value' => isset($access[$gid]['sa_delete']) ? $access[$gid]['sa_delete']: 0,
-    '#access' => $priv && $variable['delete'],
+    '#access' => $priv && $display['delete'],
   );
 
   return $form;
