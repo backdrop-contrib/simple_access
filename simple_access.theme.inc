@@ -4,8 +4,8 @@
  * Provide themes for simple access administration
  */
 
-function theme_simple_access_form($form) {
-
+function theme_simple_access_form($variables) {
+  $form =& $variables['form'];
   $options = array();
   $output = '';
   if (isset($form['#admin'])) {
@@ -25,24 +25,24 @@ function theme_simple_access_form($form) {
     $options['header'][] = t('Delete');
   }
 
-  foreach (element_children($form['form']) as $gid) {
+  foreach (element_children($form) as $gid) {
     if (!isset($form['#access']) || $form['#access']) {
       $row = array(
-        array('data' => drupal_render($form['form'][$gid]['name'])),
+        array('data' => drupal_render($form[$gid]['name'])),
       );
       if ((isset($variable['view']) && $variable['view']) || isset($form['#admin'])) {
         $row[] = array(
-          'data' => drupal_render($form['form'][$gid]['sa_view']),
+          'data' => drupal_render($form[$gid]['sa_view']),
         );
       }
       if ((isset($variable['update']) && $variable['update']) || isset($form['#admin'])) {
         $row[] = array(
-          'data' => drupal_render($form['form'][$gid]['sa_update']),
+          'data' => drupal_render($form[$gid]['sa_update']),
         );
       }
       if ((isset($variable['delete']) && $variable['delete']) || isset($form['#admin'])) {
         $row[] = array(
-          'data' => drupal_render($form['form'][$gid]['sa_delete']),
+          'data' => drupal_render($form[$gid]['sa_delete']),
         );
       }
 
