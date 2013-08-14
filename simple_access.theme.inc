@@ -5,7 +5,6 @@
  */
 
 function theme_simple_access_form($form) {
-  drupal_add_css(drupal_get_path('module', 'simple_access') . '/simple_access.css');
 
   $options = array();
   $output = '';

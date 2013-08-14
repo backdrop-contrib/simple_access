@@ -486,6 +486,9 @@ function simple_access_form($node, $admin = FALSE) {
       '#weight' => 5,
       '#access' => user_access('assign access to nodes') || user_access('administer nodes') || user_access('assign owner permissions'),
       '#theme' => 'simple_access_form',
+      '#attached' => array(
+        'css' => array(drupal_get_path('module', 'simple_access') . '/simple_access.css')
+      ),
     );
 
     if ($admin) {
@@ -911,6 +914,9 @@ function simple_access_group_grant_form($settings = array()) {
     '#tree' => TRUE,
     '#theme' => 'simple_access_form',
     '#admin' => TRUE,
+    '#attached' => array(
+      'css' => array(drupal_get_path('module', 'simple_access') . '/simple_access.css')
+    ),
   );
 
   $groups = simple_access_get_groups();
@@ -964,6 +970,9 @@ function simple_access_group_revoke_form($settings = array()) {
     '#tree' => TRUE,
     '#theme' => 'simple_access_form',
     '#admin' => TRUE,
+    '#attached' => array(
+      'css' => array(drupal_get_path('module', 'simple_access') . '/simple_access.css')
+    ),
   );
 
   $groups = simple_access_get_groups();
