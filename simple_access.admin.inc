@@ -32,7 +32,7 @@ function simple_access_page_overview() {
         '#attributes' => array('class' => array('sa-group-weight')),
       );
       $form['groups'][$gid]['ops'] = array(
-        '#markup' => l(t('edit'), 'admin/config/simple-access/groups/' . $gid . '/edit') . '&nbsp;' . l(t('delete'), 'admin/config/simple-access/groups/' . $gid . '/delete'),
+        '#markup' => l(t('edit'), 'admin/config/content/simple-access/groups/' . $gid . '/edit') . '&nbsp;' . l(t('delete'), 'admin/config/content/simple-access/groups/' . $gid . '/delete'),
       );
     }
     $form['submit'] = array(
@@ -43,7 +43,7 @@ function simple_access_page_overview() {
   }
   else {
     drupal_set_message(t('You have not yet defined any access groups.'));
-    drupal_goto('admin/config/simple-access/groups/add');
+    drupal_goto('admin/config/content/simple-access/groups/add');
   }
 }
 
@@ -104,7 +104,7 @@ function simple_access_group_form($form, &$form_state, $group = array()) {
 
 function simple_access_group_form_submit($form, &$form_state) {
   simple_access_save_group($form_state['values']);
-  $form_state['redirect'] = 'admin/config/simple-access/groups';
+  $form_state['redirect'] = 'admin/config/content/simple-access/groups';
 }
 
 function simple_access_delete_group_confirm($form, $form_state, $group) {
@@ -114,14 +114,14 @@ function simple_access_delete_group_confirm($form, $form_state, $group) {
   );
   return confirm_form($form,
     t('Are you sure you want to delete this group?'),
-    'admin/config/simple-access/groups',
+    'admin/config/content/simple-access/groups',
     t('This action cannot be undone.'), t('Delete'), t('Cancel')
   );
 }
 
 function simple_access_delete_group_confirm_submit($form, &$form_state) {
   simple_access_delete_group($form_state['values']['gid']);
-  $form_state['redirect'] = 'admin/config/simple-access/groups';
+  $form_state['redirect'] = 'admin/config/content/simple-access/groups';
 }
 
 function simple_access_profile_list() {
@@ -135,7 +135,7 @@ function simple_access_profile_list() {
   $profiles = $result->fetchAllAssoc('pid', PDO::FETCH_ASSOC);
   if (empty($profiles)) {
     drupal_set_message(t('You have not yet defined any access profiles.'));
-    drupal_goto('admin/config/simple-access/profiles/add');
+    //drupal_goto('admin/config/content/simple-access/profiles/add');
   }
   
   $form['profiles'] = array(
@@ -151,7 +151,7 @@ function simple_access_profile_list() {
       '#attributes' => array('class' => array('sa-profile-weight')),
     );
     $form['profiles'][$row['pid']]['operations'] = array(
-      '#markup' => l(t('edit'), 'admin/config/simple-access/profiles/' . $row['pid'] . '/edit') . ' ' . l(t('delete'), 'admin/config/simple-access/profiles/' . $row['pid'] . '/delete'),
+      '#markup' => l(t('edit'), 'admin/config/content/simple-access/profiles/' . $row['pid'] . '/edit') . ' ' . l(t('delete'), 'admin/config/content/simple-access/profiles/' . $row['pid'] . '/delete'),
     );
   }
 
@@ -226,7 +226,7 @@ function simple_access_profile_form_submit($form, &$form_state) {
     }
   }
 
-  $form_state['redirect'] = 'admin/config/simple-access/profiles';
+  $form_state['redirect'] = 'admin/config/content/simple-access/profiles';
 }
 
 function simple_access_settings_page() {
@@ -260,13 +260,13 @@ function simple_access_profile_delete_confirm($form, &$form_state, $profile) {
   );
   return confirm_form($form,
     t('Are you sure you want to delete this profile?'),
-    'admin/config/simple-access/profiles',
+    'admin/config/content/simple-access/profiles',
     t('This action cannot be undone.'), t('Delete'), t('Cancel')
   );
 }
 
 function simple_access_profile_delete_confirm_submit($form, &$form_state) {
   simple_access_delete_profile($form_state['values']['pid']);
-  $form_state['redirect'] = 'admin/config/simple-access/profiles';
+  $form_state['redirect'] = 'admin/config/content/simple-access/profiles';
 }
 

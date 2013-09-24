@@ -18,38 +18,39 @@
  * Implements hook_menu().
  */
 function simple_access_menu() {
-  $items['admin/config/simple-access'] = array(
+  $items['admin/config/content/simple-access'] = array(
     'title' => 'Simple Access',
     'description' => 'Configure node access',
-    'position' => 'right',
-    'page callback' => 'system_admin_menu_block_page',
-    'access arguments' => array('access administration pages'),
-    'file' => 'system.admin.inc',
-    'file path' => drupal_get_path('module', 'system'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('simple_access_settings_page'),
+    'access callback' => 'user_access',
+    'access arguments' => array('manage simple access'),
+    'file' => 'simple_access.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
   );
-  $items['admin/config/simple-access/settings'] = array(
+  $items['admin/config/content/simple-access/settings'] = array(
     'title' => 'Settings',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('simple_access_settings_page'),
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
     'description' => 'Configure which kinds of access (view, edit, delete) users with permission to use Simple Access can define for each node.',
     'file' => 'simple_access.admin.inc',
     'weight' => -1,
   );
-  $items['admin/config/simple-access/groups'] = array(
+  $items['admin/config/content/simple-access/groups'] = array(
     'title' => 'Groups',
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('simple_access_page_overview'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
     'description' => 'Manage groups of users for node-specific access control.',
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/simple-access/groups/add'] = array(
-    'title' => 'Add',
+  $items['admin/config/content/simple-access/groups/add'] = array(
+    'title' => 'Add group',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('simple_access_group_form'),
     'access callback' => 'user_access',
@@ -58,7 +59,7 @@ function simple_access_menu() {
     'weight' => -6,
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/simple-access/groups/%simple_access_group/edit'] = array(
+  $items['admin/config/content/simple-access/groups/%simple_access_group/edit'] = array(
     'title' => 'Edit Group',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('simple_access_group_form', 4),
@@ -67,7 +68,7 @@ function simple_access_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/simple-access/groups/%simple_access_group/delete'] = array(
+  $items['admin/config/content/simple-access/groups/%simple_access_group/delete'] = array(
     'title' => 'Delete Group',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('simple_access_delete_group_confirm', 4),
@@ -76,18 +77,18 @@ function simple_access_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/simple-access/profiles'] = array(
+  $items['admin/config/content/simple-access/profiles'] = array(
     'title' => 'Profiles',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('simple_access_profile_list'),
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
     'description' => 'Maintain access profiles',
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/simple-access/profiles/add'] = array(
-    'title' => 'Add',
+  $items['admin/config/content/simple-access/profiles/add'] = array(
+    'title' => 'Add profile',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('simple_access_profile_form'),
     'access callback' => 'user_access',
@@ -95,7 +96,7 @@ function simple_access_menu() {
     'type' => MENU_LOCAL_ACTION,
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/simple-access/profiles/%simple_access_profile/edit'] = array(
+  $items['admin/config/content/simple-access/profiles/%simple_access_profile/edit'] = array(
     'title' => 'Edit Profile',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('simple_access_profile_form', 4),
@@ -104,7 +105,7 @@ function simple_access_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/simple-access/profiles/%simple_access_profile/delete'] = array(
+  $items['admin/config/content/simple-access/profiles/%simple_access_profile/delete'] = array(
     'title' => 'Delete Profile',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('simple_access_profile_delete_confirm', 4),

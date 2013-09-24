@@ -76,6 +76,15 @@ function theme_simple_access_page_overview_list(&$form) {
     );
   }
   
+  if (empty($options['rows'])) {
+    $options['rows'][] = array(
+      array(
+        'data' => t('No profiles defined'),
+        'colspan' => 4,
+        'align' => 'center',
+      ),
+    );
+  }
   $output .= theme('table', $options);
   
   return $output;
@@ -101,8 +110,8 @@ function theme_simple_access_profile_list($form) {
     );
   }
 
-  if (empty($data['rows'])) {
-    $data['rows'][] = array(
+  if (empty($options['rows'])) {
+    $options['rows'][] = array(
       array(
         'data' => t('No profiles defined'),
         'colspan' => 3,
