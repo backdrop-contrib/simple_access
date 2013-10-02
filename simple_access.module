@@ -640,7 +640,7 @@ function simple_access_get_groups($gid = NULL) {
 }
 
 function simple_access_group_select() {
-  static $groups;
+  $groups =& drupal_static(__FUNCTION__);
 
   if (empty($groups)) {
     global $user;
