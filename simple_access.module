@@ -200,7 +200,7 @@ function simple_access_node_load($nodes, $types) {
     $nodes[$row['nid']]->simple_access[$row['gid']] = $row;
   }
   foreach ($profiles as $row) {
-    $nodes[$row['nid']]->simple_access_profiles_node[$row['pid']] = $row;
+    $nodes[$row['nid']]->simple_access_profiles[$row['pid']] = $row;
   }
 }
 
