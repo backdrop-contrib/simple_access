@@ -33,6 +33,7 @@ class simple_access_views_plugin_group extends views_plugin_access {
   }
 
   function options_form(&$form, &$form_state) {
+    parent::options_form($form, $form_state);
     $options = array_map(array('simple_access_views_plugin_group', '_map_groups'), simple_access_get_groups());
     $form['groups'] = array(
       '#type' => 'checkboxes',

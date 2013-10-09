@@ -7,3 +7,4 @@ files[] = simple_access.module
 files[] = simple_access.install
 files[] = simple_access.admin.inc
 files[] = simple_access.theme.inc
+files[] = views/simple_access_views_plugin_group.inc
