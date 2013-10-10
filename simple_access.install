@@ -182,5 +182,13 @@ function simple_access_update_last_removed() {
  */
 function simple_access_update_7201() {
   db_drop_primary_key('simple_access_profiles_node');
+
+  // Find any duplicate records and remove them so the index can be built.
+  $result = db_query('SELECT nid, pid FROM {simple_access_profiles_node} GROUP BY nid, pid HAVING COUNT(*) > 1');
+  foreach ($result as $row) {
+    db_query('DELETE FROM {simple_access_profiles_node} WHERE nid = :nid AND pid = :pid', array(':nid' => $row->nid, ':pid' => $row->pid));
+    db_query('INSERT INTO {simple_access_profiles_node} (nid, pid) VALUES (:nid, :pid)', array(':nid' => $row->nid, ':pid' => $row->pid));
+  }
+
   db_add_primary_key('simple_access_profiles_node', array('nid', 'pid'));
 }
