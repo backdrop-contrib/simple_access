@@ -388,7 +388,8 @@ function simple_access_node_access_explain($row) {
 
       if (!empty($profile['access'])) {
         foreach ($profile['access'] as $gid => $access) {
-          $message .= t('"%group" group can @perm.', array('%group' => $groups[$gid]['name'], '@perm' => implode(', ', array_keys(array_filter($access)))));
+          $perms = array(t('View') => $access['sa_view'], t('Update') => $access['sa_update'], t('Delete') => $access['sa_delete']);
+          $message .= t('"%group" group can @perm.', array('%group' => $groups[$gid]['name'], '@perm' => implode(', ', array_keys(array_filter($perms)))));
         }
       }
       $message .= '</dt>';
