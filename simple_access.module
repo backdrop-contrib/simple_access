@@ -62,7 +62,7 @@ function simple_access_menu() {
   $items['admin/config/content/simple-access/groups/%simple_access_group/edit'] = array(
     'title' => 'Edit Group',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('simple_access_group_form', 4),
+    'page arguments' => array('simple_access_group_form', 5),
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
     'type' => MENU_CALLBACK,
@@ -71,7 +71,7 @@ function simple_access_menu() {
   $items['admin/config/content/simple-access/groups/%simple_access_group/delete'] = array(
     'title' => 'Delete Group',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('simple_access_delete_group_confirm', 4),
+    'page arguments' => array('simple_access_delete_group_confirm', 5),
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
     'type' => MENU_CALLBACK,
@@ -99,7 +99,7 @@ function simple_access_menu() {
   $items['admin/config/content/simple-access/profiles/%simple_access_profile/edit'] = array(
     'title' => 'Edit Profile',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('simple_access_profile_form', 4),
+    'page arguments' => array('simple_access_profile_form', 5),
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
     'type' => MENU_CALLBACK,
@@ -108,7 +108,7 @@ function simple_access_menu() {
   $items['admin/config/content/simple-access/profiles/%simple_access_profile/delete'] = array(
     'title' => 'Delete Profile',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('simple_access_profile_delete_confirm', 4),
+    'page arguments' => array('simple_access_profile_delete_confirm', 5),
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
     'type' => MENU_CALLBACK,
