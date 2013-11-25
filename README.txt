@@ -108,7 +108,3 @@ Although I have to admit that this solution makes simple_access look not
 so simple anymore. :-)
 
 -Jeff
-
-
-
-

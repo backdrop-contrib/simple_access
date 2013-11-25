@@ -1,9 +1,12 @@
 <?php
 /**
  * @file
- * Provide themes for simple access administration
+ * Provide themes for simple access administration.
  */
 
+/**
+ * Theme simple access form.
+ */
 function theme_simple_access_form($variables) {
   $form =& $variables['form'];
   $options = array();
@@ -12,7 +15,7 @@ function theme_simple_access_form($variables) {
     $variable = array('view' => 1, 'update' => 1, 'delete' => 1);
   }
   else {
-    $variable = variable_get('sa_display', array('view' => 1));
+    $variable = variable_get('simple_access_display', array('view' => 1));
   }
   $options['header'] = array(t('Access Group'));
   if ((isset($variable['view']) && $variable['view']) || isset($form['#admin'])) {
@@ -56,6 +59,9 @@ function theme_simple_access_form($variables) {
   }
 }
 
+/**
+ * Theme simple access overview page as a draggable table.
+ */
 function theme_simple_access_page_overview_list(&$form) {
   drupal_add_tabledrag('sa-group-list', 'order', 'sibling', 'sa-group-weight');
   $output = '';
@@ -75,7 +81,7 @@ function theme_simple_access_page_overview_list(&$form) {
       'class' => array('draggable'),
     );
   }
-  
+
   if (empty($options['rows'])) {
     $options['rows'][] = array(
       array(
@@ -86,10 +92,13 @@ function theme_simple_access_page_overview_list(&$form) {
     );
   }
   $output .= theme('table', $options);
-  
+
   return $output;
 }
 
+/**
+ * Theme a list of simple access profiles as draggable table.
+ */
 function theme_simple_access_profile_list($form) {
   drupal_add_tabledrag('sa-profile-list', 'order', 'sibling', 'sa-profile-weight');
   $options = array(
@@ -123,5 +132,3 @@ function theme_simple_access_profile_list($form) {
 
   return $output;
 }
-
-

@@ -2,14 +2,17 @@
 
 /**
  * @file
- * Tests to check that simple access is working correctly
+ * Tests to check that simple access is working correctly.
  */
 
 /**
- * Test Owner permissions
+ * Test Owner permissions.
  */
 class SimpleAccessOwnerTestCase extends DrupalWebTestCase {
-  function getInfo() {
+  /**
+   * {@inheritdoc}
+   */
+  public function getInfo() {
     return array(
       'name' => t('Check owner permissions'),
       'description' => t('Test different owner permissions and make sure access is correct'),
@@ -17,7 +20,10 @@ class SimpleAccessOwnerTestCase extends DrupalWebTestCase {
     );
   }
 
-  function setUp() {
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
     parent::setUp('simple_access');
 
     $this->node_type = $this->drupalCreateContentType();
@@ -26,7 +32,10 @@ class SimpleAccessOwnerTestCase extends DrupalWebTestCase {
 
   }
 
-  function testSimpleAccessOwnerCanEdit() {
+  /**
+   * Test if owner can edit content.
+   */
+  public function testSimpleAccessOwnerCanEdit() {
     $account = $this->drupalCreateUser();
     $n1 = $this->drupalCreateNode(array(
       'type' => $this->node_type,
@@ -43,11 +52,10 @@ class SimpleAccessOwnerTestCase extends DrupalWebTestCase {
 
     $n1 = node_load($n1->nid);
     $n1->status = 1;
-    $this->assertFalse(node_access('update', $n1, $account), t('Owner doesn\'t have edit access to content'), 'Access');
+    $this->assertFalse(node_access('update', $n1, $account), t("Owner doesn't have edit access to content"), 'Access');
 
     $n2 = node_load($n2->nid);
     $n2->status = 1;
     $this->assertTrue(node_access('update', $n2, $account), t('Owner has edit access to content'), 'Access');
   }
 }
-

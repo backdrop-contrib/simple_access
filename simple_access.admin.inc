@@ -6,6 +6,9 @@
  * smaller.
  */
 
+/**
+ * Simple Access Overview form.
+ */
 function simple_access_page_overview() {
   if (count($groups = simple_access_get_groups())) {
     drupal_set_title(t('Access groups'));
@@ -47,6 +50,9 @@ function simple_access_page_overview() {
   }
 }
 
+/**
+ * Overview form submit callback.
+ */
 function simple_access_page_overview_submit($form, &$form_state) {
   foreach ($form_state['values']['groups'] as $gid => $group) {
     db_update('simple_access_groups')
@@ -58,8 +64,10 @@ function simple_access_page_overview_submit($form, &$form_state) {
   }
 }
 
+/**
+ * Simple Access group form.
+ */
 function simple_access_group_form($form, &$form_state, $group = array()) {
-  $roles = array();
   if (!empty($group)) {
     drupal_set_title(t('Edit Access Group'));
     $form['gid'] = array(
@@ -71,7 +79,7 @@ function simple_access_group_form($form, &$form_state, $group = array()) {
     drupal_set_title(t('Create Access Group'));
   }
   $group += array('name' => '', 'roles' => array(), 'weight' => 0);
-  
+
   $form['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Name'),
@@ -102,11 +110,17 @@ function simple_access_group_form($form, &$form_state, $group = array()) {
   return $form;
 }
 
+/**
+ * Group form submit callback.
+ */
 function simple_access_group_form_submit($form, &$form_state) {
   simple_access_save_group($form_state['values']);
   $form_state['redirect'] = 'admin/config/content/simple-access/groups';
 }
 
+/**
+ * Confirm group delete form.
+ */
 function simple_access_delete_group_confirm($form, $form_state, $group) {
   $form['gid'] = array(
     '#type' => 'value',
@@ -119,11 +133,17 @@ function simple_access_delete_group_confirm($form, $form_state, $group) {
   );
 }
 
+/**
+ * Delete group confirm submit callback.
+ */
 function simple_access_delete_group_confirm_submit($form, &$form_state) {
   simple_access_delete_group($form_state['values']['gid']);
   $form_state['redirect'] = 'admin/config/content/simple-access/groups';
 }
 
+/**
+ * Access Profiles settings form.
+ */
 function simple_access_profile_list() {
   $form = array();
   $result = db_select('simple_access_profiles', 'p')
@@ -135,9 +155,9 @@ function simple_access_profile_list() {
   $profiles = $result->fetchAllAssoc('pid', PDO::FETCH_ASSOC);
   if (empty($profiles)) {
     drupal_set_message(t('You have not yet defined any access profiles.'));
-    //drupal_goto('admin/config/content/simple-access/profiles/add');
+    // drupal_goto('admin/config/content/simple-access/profiles/add');
   }
-  
+
   $form['profiles'] = array(
     '#tree' => TRUE,
   );
@@ -163,6 +183,9 @@ function simple_access_profile_list() {
   return $form;
 }
 
+/**
+ * Profile list submit callback.
+ */
 function simple_access_profile_list_submit($form, $form_state) {
   foreach ($form_state['values']['profiles'] as $pid => $profile) {
     $profile['pid'] = $pid;
@@ -170,6 +193,9 @@ function simple_access_profile_list_submit($form, $form_state) {
   }
 }
 
+/**
+ * Simple Access profile form.
+ */
 function simple_access_profile_form($form, $form_state, $profile = array()) {
   $profile += array('access' => FALSE);
 
@@ -199,12 +225,15 @@ function simple_access_profile_form($form, $form_state, $profile = array()) {
 
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => empty($pid) ? t('Submit') : t('Update'),
+    '#value' => empty($profile['pid']) ? t('Submit') : t('Update'),
   );
 
   return $form;
 }
 
+/**
+ * Profile form submit callback.
+ */
 function simple_access_profile_form_submit($form, &$form_state) {
   if (!empty($form_state['values']['pid'])) {
     drupal_write_record('simple_access_profiles', $form_state['values'], array('pid'));
@@ -229,30 +258,36 @@ function simple_access_profile_form_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/config/content/simple-access/profiles';
 }
 
+/**
+ * Simple Access settings form.
+ */
 function simple_access_settings_page() {
   drupal_set_title(t('Simple Access Settings'));
   $options = array(
     'view' => t('<strong>View</strong>: Displays viewability selections at top of node form. Selected access groups will be the only users who can view the node. All unselected = normal node behavior (viewable by all).<br />'),
     'update' => t('<strong>Edit</strong>: Displays editability selections at top of node form. Users who are part of selected access groups will be able to edit this node. All unselected = "normal" node behavior (only author and admins may edit).<br />'),
-    'delete' => t('<strong>Delete</strong>: Displays deleteability selections at top of node form. Users who are part of selected access groups will be able to delete this node. All unselected = "normal" node behavior (only author and admins may delete).<br />')
+    'delete' => t('<strong>Delete</strong>: Displays deleteability selections at top of node form. Users who are part of selected access groups will be able to delete this node. All unselected = "normal" node behavior (only author and admins may delete).<br />'),
   );
-  $form['sa_display'] = array(
+  $form['simple_access_display'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Display'),
-    '#default_value' => variable_get('sa_display', array('view')),
+    '#default_value' => variable_get('simple_access_display', array('view')),
     '#options' => $options,
     '#description' => t('Which options should appear on node add/edit pages for administrators? Select at least one.'),
-    '#required' => TRUE
+    '#required' => TRUE,
   );
-  $form['sa_showgroups'] = array(
+  $form['simple_access_showgroups'] = array(
     '#type' => 'checkbox',
     '#title' => 'Show groups even when user is not a member.',
-    '#default_value' => variable_get('sa_showgroups', 0),
+    '#default_value' => variable_get('simple_access_showgroups', 0),
     '#description' => 'This is useful when you want to have a user be able to make content viewable by themselves and a higher privileged group (e.g. students sharing work with faculty)',
-    );
+  );
   return system_settings_form($form);
 }
 
+/**
+ * Confirm delete form.
+ */
 function simple_access_profile_delete_confirm($form, &$form_state, $profile) {
   $form['pid'] = array(
     '#type' => 'value',
@@ -265,8 +300,10 @@ function simple_access_profile_delete_confirm($form, &$form_state, $profile) {
   );
 }
 
+/**
+ * Confirm delete submit callback.
+ */
 function simple_access_profile_delete_confirm_submit($form, &$form_state) {
   simple_access_delete_profile($form_state['values']['pid']);
   $form_state['redirect'] = 'admin/config/content/simple-access/profiles';
 }
-

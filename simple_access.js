@@ -1,4 +1,3 @@
-
 (function ($) {
 
 Drupal.behaviors.simple_accessFieldsetSummaries = {

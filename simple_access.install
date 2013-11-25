@@ -14,15 +14,16 @@ function simple_access_install() {
     ->condition('name', 'simple_access')
     ->execute();
 
-  drupal_set_message(st('simple access has created the required tables.'));
+  $t = get_t();
+  drupal_set_message($t('simple access has created the required tables.'));
 }
 
 /**
  * Implements hook_uninstall().
  */
 function simple_access_uninstall() {
-  variable_del('sa_display');
-  variable_del('sa_showgroups');
+  variable_del('simple_access_display');
+  variable_del('simple_access_showgroups');
   drupal_set_message(t('simple access has been uninstalled'));
 }
 
@@ -40,6 +41,9 @@ function simple_access_disable() {
   drupal_set_message(t('To fully disable simple_access you also need to !rebuild_permissions.', array('!rebuild_permissions' => l(t('rebuild permissions'), 'admin/reports/status/rebuild'))));
 }
 
+/**
+ * Implements hook_schema().
+ */
 function simple_access_schema() {
   $schema = array();
 
@@ -67,27 +71,27 @@ function simple_access_schema() {
         'not null' => TRUE, 'default' => 0,
       ),
     ),
-    'primary key' =>  array('nid', 'gid'),
+    'primary key' => array('nid', 'gid'),
   );
   $schema['simple_access_owner'] = array(
     'fields' => array(
-       'nid' => array('type' => 'int', 'unsigned' => TRUE,
-         'not null' => TRUE, 'default' => 0, 'disp-width' => '10'),
-       'sa_view' => array('type' => 'int', 'unsigned' => TRUE,
-         'size' => 'tiny', 'not null' => TRUE, 'default' => 0,
-         'disp-width' => '3'),
-       'sa_update' => array('type' => 'int', 'unsigned' => TRUE,
-         'size' => 'tiny', 'not null' => TRUE, 'default' => 0,
-         'disp-width' => '3'),
-       'sa_delete' => array('type' => 'int', 'unsigned' => TRUE,
-         'size' => 'tiny', 'not null' => TRUE, 'default' => 0,
-         'disp-width' => '3')),
+      'nid' => array('type' => 'int', 'unsigned' => TRUE,
+        'not null' => TRUE, 'default' => 0, 'disp-width' => '10'),
+      'sa_view' => array('type' => 'int', 'unsigned' => TRUE,
+        'size' => 'tiny', 'not null' => TRUE, 'default' => 0,
+        'disp-width' => '3'),
+      'sa_update' => array('type' => 'int', 'unsigned' => TRUE,
+        'size' => 'tiny', 'not null' => TRUE, 'default' => 0,
+        'disp-width' => '3'),
+      'sa_delete' => array('type' => 'int', 'unsigned' => TRUE,
+        'size' => 'tiny', 'not null' => TRUE, 'default' => 0,
+        'disp-width' => '3')),
     'primary key' => array('nid'),
   );
   $schema['simple_access_groups'] = array(
     'fields' => array(
       'gid' => array(
-        'type' => 'serial', 'not null' => TRUE, 'disp-width' => '11'
+        'type' => 'serial', 'not null' => TRUE, 'disp-width' => '11',
       ),
       'name' => array(
         'type' => 'varchar', 'length' => 50, 'not null' => TRUE,
@@ -114,7 +118,7 @@ function simple_access_schema() {
   $schema['simple_access_profiles'] = array(
     'fields' => array(
       'pid' => array(
-        'type' => 'serial', 'not null' => TRUE, 'disp-width' => '11'
+        'type' => 'serial', 'not null' => TRUE, 'disp-width' => '11',
       ),
       'name' => array(
         'type' => 'varchar', 'length' => 50, 'not null' => TRUE,
@@ -148,7 +152,7 @@ function simple_access_schema() {
         'not null' => TRUE, 'default' => 0,
       ),
     ),
-    'primary key' =>  array('pid', 'gid'),
+    'primary key' => array('pid', 'gid'),
   );
   $schema['simple_access_profiles_node'] = array(
     'fields' => array(
@@ -191,4 +195,22 @@ function simple_access_update_7201() {
   }
 
   db_add_primary_key('simple_access_profiles_node', array('nid', 'pid'));
+}
+
+/**
+ * Update variable names.
+ */
+function simple_access_update_7202(&$sandbox) {
+  // Only write new variables when they are not default values.
+  $var = variable_get('sa_display', array('view'));
+  if ($var != array('view')) {
+    variable_set('simple_access_display', $var);
+  }
+  $var = variable_get('sa_showgroups', 0);
+  if ($var != 0) {
+    variable_set('simple_access_showgroups', $var);
+  }
+  variable_del('sa_display');
+  variable_del('sa_showgroups');
+  return t('Updated variable names from sa_* to simple_access_*');
 }
