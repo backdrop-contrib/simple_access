@@ -15,30 +15,22 @@ function simple_access_install() {
     ->execute();
 
   $t = get_t();
-  drupal_set_message($t('simple access has created the required tables.'));
+  backdrop_set_message($t('simple access has created the required tables.'));
 }
 
-/**
- * Implements hook_uninstall().
- */
-function simple_access_uninstall() {
-  variable_del('simple_access_display');
-  variable_del('simple_access_showgroups');
-  drupal_set_message(t('simple access has been uninstalled'));
-}
 
 /**
  * Implements hook_enable().
  */
 function simple_access_enable() {
-  drupal_set_message(t('To fully activate simple_access you also need to !rebuild_permissions.', array('!rebuild_permissions' => l(t('rebuild permissions'), 'admin/reports/status/rebuild'))));
+  backdrop_set_message(t('To fully activate simple_access you also need to !rebuild_permissions.', array('!rebuild_permissions' => l(t('rebuild permissions'), 'admin/reports/status/rebuild'))));
 }
 
 /**
  * Implements hook_disable().
  */
 function simple_access_disable() {
-  drupal_set_message(t('To fully disable simple_access you also need to !rebuild_permissions.', array('!rebuild_permissions' => l(t('rebuild permissions'), 'admin/reports/status/rebuild'))));
+  backdrop_set_message(t('To fully disable simple_access you also need to !rebuild_permissions.', array('!rebuild_permissions' => l(t('rebuild permissions'), 'admin/reports/status/rebuild'))));
 }
 
 /**
@@ -170,47 +162,22 @@ function simple_access_schema() {
 
   return $schema;
 }
-/**
- * Updates
- */
+
 
 /**
  * Implements hook_update_last_removed().
  */
 function simple_access_update_last_removed() {
-  return 6201;
+  return 7202;
 }
 
 /**
- * Fix up missing primary key on {simple_access_profiles_node}.
+ * Move settings from variables to config.
  */
-function simple_access_update_7201() {
-  db_drop_primary_key('simple_access_profiles_node');
-
-  // Find any duplicate records and remove them so the index can be built.
-  $result = db_query('SELECT nid, pid FROM {simple_access_profiles_node} GROUP BY nid, pid HAVING COUNT(*) > 1');
-  foreach ($result as $row) {
-    db_query('DELETE FROM {simple_access_profiles_node} WHERE nid = :nid AND pid = :pid', array(':nid' => $row->nid, ':pid' => $row->pid));
-    db_query('INSERT INTO {simple_access_profiles_node} (nid, pid) VALUES (:nid, :pid)', array(':nid' => $row->nid, ':pid' => $row->pid));
-  }
-
-  db_add_primary_key('simple_access_profiles_node', array('nid', 'pid'));
-}
-
-/**
- * Update variable names.
- */
-function simple_access_update_7202(&$sandbox) {
-  // Only write new variables when they are not default values.
-  $var = variable_get('sa_display', array('view'));
-  if ($var != array('view')) {
-    variable_set('simple_access_display', $var);
-  }
-  $var = variable_get('sa_showgroups', 0);
-  if ($var != 0) {
-    variable_set('simple_access_showgroups', $var);
-  }
-  variable_del('sa_display');
-  variable_del('sa_showgroups');
-  return t('Updated variable names from sa_* to simple_access_*');
-}
+function simple_access_update_1000()
+{
+  // Migrate variables to config.
+  $config = config('simple_access.settings');
+  $config->set('simple_access_display', update_variable_get('simple_access_display', ''));
+  $config->set('simple_access_showgroups', update_variable_get('simple_access_showgroups', ''));
+  $config->save();

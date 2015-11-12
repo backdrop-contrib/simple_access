@@ -15,19 +15,19 @@
  * Implements hook_menu().
  */
 function simple_access_menu() {
-  $items['admin/config/content/simple-access'] = array(
+  $items['admin/config/content/simple_access'] = array(
     'title' => 'Simple Access',
     'description' => 'Configure node access',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_settings_page'),
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
     'file' => 'simple_access.admin.inc',
     'type' => MENU_NORMAL_ITEM,
   );
-  $items['admin/config/content/simple-access/settings'] = array(
+  $items['admin/config/content/simple_access/settings'] = array(
     'title' => 'Settings',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_settings_page'),
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
@@ -36,19 +36,19 @@ function simple_access_menu() {
     'file' => 'simple_access.admin.inc',
     'weight' => -1,
   );
-  $items['admin/config/content/simple-access/groups'] = array(
+  $items['admin/config/content/simple_access/groups'] = array(
     'title' => 'Groups',
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_page_overview'),
     'type' => MENU_LOCAL_TASK,
     'description' => 'Manage groups of users for node-specific access control.',
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/content/simple-access/groups/add'] = array(
+  $items['admin/config/content/simple_access/groups/add'] = array(
     'title' => 'Add group',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_group_form'),
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
@@ -56,27 +56,27 @@ function simple_access_menu() {
     'weight' => -6,
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/content/simple-access/groups/%simple_access_group/edit'] = array(
+  $items['admin/config/content/simple_access/groups/%simple_access_group/edit'] = array(
     'title' => 'Edit Group',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_group_form', 5),
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
     'type' => MENU_CALLBACK,
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/content/simple-access/groups/%simple_access_group/delete'] = array(
+  $items['admin/config/content/simple_access/groups/%simple_access_group/delete'] = array(
     'title' => 'Delete Group',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_delete_group_confirm', 5),
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
     'type' => MENU_CALLBACK,
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/content/simple-access/profiles'] = array(
+  $items['admin/config/content/simple_access/profiles'] = array(
     'title' => 'Profiles',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_profile_list'),
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
@@ -84,27 +84,27 @@ function simple_access_menu() {
     'description' => 'Maintain access profiles',
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/content/simple-access/profiles/add'] = array(
+  $items['admin/config/content/simple_access/profiles/add'] = array(
     'title' => 'Add profile',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_profile_form'),
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
     'type' => MENU_LOCAL_ACTION,
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/content/simple-access/profiles/%simple_access_profile/edit'] = array(
+  $items['admin/config/content/simple_access/profiles/%simple_access_profile/edit'] = array(
     'title' => 'Edit Profile',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_profile_form', 5),
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
     'type' => MENU_CALLBACK,
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/content/simple-access/profiles/%simple_access_profile/delete'] = array(
+  $items['admin/config/content/simple_access/profiles/%simple_access_profile/delete'] = array(
     'title' => 'Delete Profile',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_profile_delete_confirm', 5),
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
@@ -144,7 +144,7 @@ function simple_access_permission() {
 function simple_access_node_prepare($node) {
   // Only use the defaults if this is a new node.
   if (empty($node->nid)) {
-    $defaults = variable_get('simple_access_' . $node->type, array('simple_access' => array(), 'simple_access_profiles' => array(), 'simple_access_owner' => array()));
+    $defaults = config_get('simple_access.settings','simple_access_' . $node->type, array('simple_access' => array(), 'simple_access_profiles' => array(), 'simple_access_owner' => array()));
   }
   else {
     $defaults = array('simple_access' => array(), 'simple_access_profiles' => array(), 'simple_access_owner' => array());
@@ -415,7 +415,7 @@ function simple_access_form_node_form_alter(&$form, &$form_state, $form_id) {
  */
 function simple_access_form_node_type_form_alter(&$form, &$form_state) {
   $type = $form['old_type']['#value'];
-  $default = variable_get('simple_access_' . $type, array('simple_access' => array(), 'simple_access_profiles' => array(), 'simple_access_owner' => array()));
+  $default = config_get('simple_access.settings','simple_access_' . $type, array('simple_access' => array(), 'simple_access_profiles' => array(), 'simple_access_owner' => array()));
 
   $tmp_form = simple_access_form((object) $default, TRUE);
 
@@ -434,7 +434,7 @@ function simple_access_node_type_submit(&$form, &$form_state) {
   $type = $form_state['values']['type'];
 
   if ($op == t('Save content type')) {
-    variable_set('simple_access_' . $type, $form_state['values']['simple_access']);
+    config_set('simple_access.settings','simple_access_' . $type, $form_state['values']['simple_access']);
   }
 }
 
@@ -488,7 +488,7 @@ function simple_access_form($node, $admin = FALSE) {
     '#weight' => 20,
     '#group' => 'additional_settings',
     '#attached' => array(
-      'js' => array(drupal_get_path('module', 'simple_access') . '/simple_access.js'),
+      'js' => array(backdrop_get_path('module', 'simple_access') . '/simple_access.js'),
     ),
   );
   if (!empty($profiles)) {
@@ -507,7 +507,7 @@ function simple_access_form($node, $admin = FALSE) {
       '#access' => user_access('assign access to nodes') || user_access('administer nodes') || user_access('assign owner permissions'),
       '#theme' => 'simple_access_form',
       '#attached' => array(
-        'css' => array(drupal_get_path('module', 'simple_access') . '/simple_access.css'),
+        'css' => array(backdrop_get_path('module', 'simple_access') . '/simple_access.css'),
       ),
     );
 
@@ -539,7 +539,7 @@ function simple_access_form_row($gid, $group, $access, $admin = FALSE) {
     $display = array('view' => 1, 'update' => 1, 'delete' => 1);
   }
   else {
-    $display = variable_get('simple_access_display', array(
+    $display = config_get('simple_access.settings','simple_access_display', array(
       'view' => 1, 'update' => 0, 'delete' => 0)
     );
   }
@@ -675,11 +675,11 @@ function simple_access_get_groups($gid = NULL) {
  * Return groups for which user is a member.
  */
 function simple_access_group_select() {
-  $groups =& drupal_static(__FUNCTION__);
+  $groups =& backdrop_static(__FUNCTION__);
 
   if (empty($groups)) {
     global $user;
-    $default_access = user_access('administer nodes') || variable_get('simple_access_showgroups', FALSE);
+    $default_access = user_access('administer nodes') || config_get('simple_access.settings','simple_access_showgroups', FALSE);
 
     $groups = array();
     $result = db_select('simple_access_groups', 'g')
@@ -736,7 +736,7 @@ function simple_access_groups_check_user($groups) {
   global $user;
 
   $roles = array_keys($user->roles);
-  $roles[] = $user->uid ? DRUPAL_AUTHENTICATED_RID : DRUPAL_ANONYMOUS_RID;
+  $roles[] = $user->uid ? BACKDROP_AUTHENTICATED_RID : BACKDROP_ANONYMOUS_RID;
 
   $user_groups = simple_access_groups_from_roles($roles);
   return array_intersect(array_filter($groups), $user_groups);
@@ -949,7 +949,7 @@ function simple_access_owner_revoke($node, $context) {
 function simple_access_group_grant_form($context) {
   $form = array();
 
-  $display = variable_get('simple_access_display', array(
+  $display = config_get('simple_access.settings','simple_access_display', array(
     'view' => 1, 'update' => 0, 'delete' => 0)
   );
 
@@ -957,7 +957,7 @@ function simple_access_group_grant_form($context) {
     '#tree' => TRUE,
     '#theme' => 'simple_access_form',
     '#attached' => array(
-      'css' => array(drupal_get_path('module', 'simple_access') . '/simple_access.css'),
+      'css' => array(backdrop_get_path('module', 'simple_access') . '/simple_access.css'),
     ),
   );
 
@@ -1024,7 +1024,7 @@ function simple_access_group_grant($node, $context) {
 function simple_access_group_revoke_form($context = array()) {
   $form = array();
 
-  $display = variable_get('simple_access_display', array(
+  $display = config_get('simple_access.settings','simple_access_display', array(
     'view' => 1, 'update' => 0, 'delete' => 0)
   );
 
@@ -1032,7 +1032,7 @@ function simple_access_group_revoke_form($context = array()) {
     '#tree' => TRUE,
     '#theme' => 'simple_access_form',
     '#attached' => array(
-      'css' => array(drupal_get_path('module', 'simple_access') . '/simple_access.css'),
+      'css' => array(backdrop_get_path('module', 'simple_access') . '/simple_access.css'),
     ),
   );
 
@@ -1202,4 +1202,24 @@ function simple_access_group_load($gid) {
  */
 function simple_access_profile_load($pid) {
   return simple_access_get_profiles($pid);
+}
+
+/**
+ * Implements hook_config_info().
+ */
+function simple_access_config_info() {
+  $prefixes['simple_access.settings'] = array(
+    'label' => t('Simple Access'),
+    'group' => t('Configuration'),
+  );
+  return $prefixes;
+}
+
+/**
+ * Implements hook_autoload_info().
+ */
+function simple_access_autoload_info() {
+  return array(
+    'SimpleAccessOwnerTestCase' => 'tests/simple_access.test',
+  );
 }

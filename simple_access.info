@@ -1,6 +1,6 @@
 name = Simple Access
 description = Provides simple hide/view access for nodes.
-core = 7.x
+backdrop = 1.x
 package = Access control
-configure = admin/config/content/simple-access
-files[] = views/simple_access_views_plugin_group.inc
+configure = admin/config/content/simple_access
+

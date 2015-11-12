@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
-  Simple Access Module for Drupal
+  Simple Access Module for Backdrop
     developed by: Jeff Robbins | jjeff | robbins (att) jjeff (d0t) com
 ------------------------------------------------------------------------------
 

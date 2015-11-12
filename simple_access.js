@@ -1,13 +1,13 @@
 (function ($) {
 
-Drupal.behaviors.simple_accessFieldsetSummaries = {
+Backdrop.behaviors.simple_accessFieldsetSummaries = {
   attach: function (context) {
-    $('fieldset#edit-simple-access').drupalSetSummary(function (context) {
+    $('fieldset#edit-simple_access').backdropSetSummary(function (context) {
       if (!$('.form-checkbox:checked', context).size()) {
-        return Drupal.t('Public access');
+        return Backdrop.t('Public access');
       }
       else {
-        return Drupal.t('Restricted access');
+        return Backdrop.t('Restricted access');
       }
     });
   }

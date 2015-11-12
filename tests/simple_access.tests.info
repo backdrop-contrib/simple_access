@@ -1,0 +1,5 @@
+[SimpleAccessOwnerTestCase]
+name = Check owner permissions
+description = Test different owner permissions and make sure access is correct.
+group = Simple Access
+file = simple_access.test

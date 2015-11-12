@@ -8,7 +8,7 @@ Dependancies:
 
 INSTALLATION
 ********************************************************************
-1. Place the entire simple_access directory into your Drupal modules/
+1. Place the entire simple_access directory into your Backdrop modules/
    directory.
 
 2. Enable this module by navigating to:

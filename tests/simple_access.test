@@ -8,17 +8,7 @@
 /**
  * Test Owner permissions.
  */
-class SimpleAccessOwnerTestCase extends DrupalWebTestCase {
-  /**
-   * {@inheritdoc}
-   */
-  public function getInfo() {
-    return array(
-      'name' => t('Check owner permissions'),
-      'description' => t('Test different owner permissions and make sure access is correct'),
-      'group' => t('Simple Access'),
-    );
-  }
+class SimpleAccessOwnerTestCase extends BackdropWebTestCase {
 
   /**
    * {@inheritdoc}
@@ -26,7 +16,7 @@ class SimpleAccessOwnerTestCase extends DrupalWebTestCase {
   public function setUp() {
     parent::setUp('simple_access');
 
-    $this->node_type = $this->drupalCreateContentType();
+    $this->node_type = $this->backdropCreateContentType();
 
     node_access_rebuild();
 
@@ -36,14 +26,14 @@ class SimpleAccessOwnerTestCase extends DrupalWebTestCase {
    * Test if owner can edit content.
    */
   public function testSimpleAccessOwnerCanEdit() {
-    $account = $this->drupalCreateUser();
-    $n1 = $this->drupalCreateNode(array(
+    $account = $this->backdropCreateUser();
+    $n1 = $this->backdropCreateNode(array(
       'type' => $this->node_type,
       'uid' => $account->uid,
       'status' => 1,
       'simple_access_owner' => array('sa_view' => 1),
     ));
-    $n2 = $this->drupalCreateNode(array(
+    $n2 = $this->backdropCreateNode(array(
       'type' => $this->node_type,
       'uid' => $account->uid,
       'status' => 1,

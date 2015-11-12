@@ -11,7 +11,7 @@
  */
 function simple_access_page_overview() {
   if (count($groups = simple_access_get_groups())) {
-    drupal_set_title(t('Access groups'));
+    backdrop_set_title(t('Access groups'));
     $roles = user_roles();
     $form['groups'] = array(
       '#tree' => TRUE,
@@ -35,7 +35,7 @@ function simple_access_page_overview() {
         '#attributes' => array('class' => array('sa-group-weight')),
       );
       $form['groups'][$gid]['ops'] = array(
-        '#markup' => l(t('edit'), 'admin/config/content/simple-access/groups/' . $gid . '/edit') . '&nbsp;' . l(t('delete'), 'admin/config/content/simple-access/groups/' . $gid . '/delete'),
+        '#markup' => l(t('edit'), 'admin/config/content/simple_access/groups/' . $gid . '/edit') . '&nbsp;' . l(t('delete'), 'admin/config/content/simple_access/groups/' . $gid . '/delete'),
       );
     }
     $form['submit'] = array(
@@ -45,8 +45,8 @@ function simple_access_page_overview() {
     return $form;
   }
   else {
-    drupal_set_message(t('You have not yet defined any access groups.'));
-    drupal_goto('admin/config/content/simple-access/groups/add');
+    backdrop_set_message(t('You have not yet defined any access groups.'));
+    backdrop_goto('admin/config/content/simple_access/groups/add');
   }
 }
 
@@ -69,14 +69,14 @@ function simple_access_page_overview_submit($form, &$form_state) {
  */
 function simple_access_group_form($form, &$form_state, $group = array()) {
   if (!empty($group)) {
-    drupal_set_title(t('Edit Access Group'));
+    backdrop_set_title(t('Edit Access Group'));
     $form['gid'] = array(
       '#type' => 'value',
       '#value' => $group['gid'],
     );
   }
   else {
-    drupal_set_title(t('Create Access Group'));
+    backdrop_set_title(t('Create Access Group'));
   }
   $group += array('name' => '', 'roles' => array(), 'weight' => 0);
 
@@ -115,7 +115,7 @@ function simple_access_group_form($form, &$form_state, $group = array()) {
  */
 function simple_access_group_form_submit($form, &$form_state) {
   simple_access_save_group($form_state['values']);
-  $form_state['redirect'] = 'admin/config/content/simple-access/groups';
+  $form_state['redirect'] = 'admin/config/content/simple_access/groups';
 }
 
 /**
@@ -128,7 +128,7 @@ function simple_access_delete_group_confirm($form, $form_state, $group) {
   );
   return confirm_form($form,
     t('Are you sure you want to delete this group?'),
-    'admin/config/content/simple-access/groups',
+    'admin/config/content/simple_access/groups',
     t('This action cannot be undone.'), t('Delete'), t('Cancel')
   );
 }
@@ -138,7 +138,7 @@ function simple_access_delete_group_confirm($form, $form_state, $group) {
  */
 function simple_access_delete_group_confirm_submit($form, &$form_state) {
   simple_access_delete_group($form_state['values']['gid']);
-  $form_state['redirect'] = 'admin/config/content/simple-access/groups';
+  $form_state['redirect'] = 'admin/config/content/simple_access/groups';
 }
 
 /**
@@ -154,8 +154,8 @@ function simple_access_profile_list() {
 
   $profiles = $result->fetchAllAssoc('pid', PDO::FETCH_ASSOC);
   if (empty($profiles)) {
-    drupal_set_message(t('You have not yet defined any access profiles.'));
-    // drupal_goto('admin/config/content/simple-access/profiles/add');
+    backdrop_set_message(t('You have not yet defined any access profiles.'));
+    // backdrop_goto('admin/config/content/simple_access/profiles/add');
   }
 
   $form['profiles'] = array(
@@ -171,7 +171,7 @@ function simple_access_profile_list() {
       '#attributes' => array('class' => array('sa-profile-weight')),
     );
     $form['profiles'][$row['pid']]['operations'] = array(
-      '#markup' => l(t('edit'), 'admin/config/content/simple-access/profiles/' . $row['pid'] . '/edit') . ' ' . l(t('delete'), 'admin/config/content/simple-access/profiles/' . $row['pid'] . '/delete'),
+      '#markup' => l(t('edit'), 'admin/config/content/simple_access/profiles/' . $row['pid'] . '/edit') . ' ' . l(t('delete'), 'admin/config/content/simple_access/profiles/' . $row['pid'] . '/delete'),
     );
   }
 
@@ -189,7 +189,7 @@ function simple_access_profile_list() {
 function simple_access_profile_list_submit($form, $form_state) {
   foreach ($form_state['values']['profiles'] as $pid => $profile) {
     $profile['pid'] = $pid;
-    drupal_write_record('simple_access_profiles', $profile, array('pid'));
+    backdrop_write_record('simple_access_profiles', $profile, array('pid'));
   }
 }
 
@@ -236,10 +236,10 @@ function simple_access_profile_form($form, $form_state, $profile = array()) {
  */
 function simple_access_profile_form_submit($form, &$form_state) {
   if (!empty($form_state['values']['pid'])) {
-    drupal_write_record('simple_access_profiles', $form_state['values'], array('pid'));
+    backdrop_write_record('simple_access_profiles', $form_state['values'], array('pid'));
   }
   else {
-    drupal_write_record('simple_access_profiles', $form_state['values']);
+    backdrop_write_record('simple_access_profiles', $form_state['values']);
   }
 
   db_delete('simple_access_profiles_access')
@@ -250,19 +250,19 @@ function simple_access_profile_form_submit($form, &$form_state) {
       if ($access['sa_view'] || $access['sa_update'] || $access['sa_delete']) {
         $access['pid'] = $form_state['values']['pid'];
         $access['gid'] = $gid;
-        drupal_write_record('simple_access_profiles_access', $access);
+        backdrop_write_record('simple_access_profiles_access', $access);
       }
     }
   }
 
-  $form_state['redirect'] = 'admin/config/content/simple-access/profiles';
+  $form_state['redirect'] = 'admin/config/content/simple_access/profiles';
 }
 
 /**
  * Simple Access settings form.
  */
 function simple_access_settings_page() {
-  drupal_set_title(t('Simple Access Settings'));
+  backdrop_set_title(t('Simple Access Settings'));
   $options = array(
     'view' => t('<strong>View</strong>: Displays viewability selections at top of node form. Selected access groups will be the only users who can view the node. All unselected = normal node behavior (viewable by all).<br />'),
     'update' => t('<strong>Edit</strong>: Displays editability selections at top of node form. Users who are part of selected access groups will be able to edit this node. All unselected = "normal" node behavior (only author and admins may edit).<br />'),
@@ -271,7 +271,7 @@ function simple_access_settings_page() {
   $form['simple_access_display'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Display'),
-    '#default_value' => variable_get('simple_access_display', array('view')),
+    '#default_value' => config_get('simple_access.settings','simple_access_display', array('view')),
     '#options' => $options,
     '#description' => t('Which options should appear on node add/edit pages for administrators? Select at least one.'),
     '#required' => TRUE,
@@ -279,11 +279,32 @@ function simple_access_settings_page() {
   $form['simple_access_showgroups'] = array(
     '#type' => 'checkbox',
     '#title' => 'Show groups even when user is not a member.',
-    '#default_value' => variable_get('simple_access_showgroups', 0),
+    '#default_value' => config_get('simple_access.settings','simple_access_showgroups'),
     '#description' => 'This is useful when you want to have a user be able to make content viewable by themselves and a higher privileged group (e.g. students sharing work with faculty)',
   );
-  return system_settings_form($form);
+
+  // Add a submit button
+  $form['actions']['#type'] = 'actions';
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  );
+
+  return $form;
 }
+
+/**
+ * Submit handler for module_settings_form().
+ */
+function simple_access_settings_page_submit($form, &$form_state) {
+  $config = config('simple_access.settings');
+  $config->set('simple_access_display', $form_state['values']['simple_access_display']);
+  $config->set('simple_access_showgroups', $form_state['values']['simple_access_showgroups']);
+  $config->save();
+  backdrop_set_message(t('The configuration options have been saved.'));
+}
+
+
 
 /**
  * Confirm delete form.
@@ -295,7 +316,7 @@ function simple_access_profile_delete_confirm($form, &$form_state, $profile) {
   );
   return confirm_form($form,
     t('Are you sure you want to delete this profile?'),
-    'admin/config/content/simple-access/profiles',
+    'admin/config/content/simple_access/profiles',
     t('This action cannot be undone.'), t('Delete'), t('Cancel')
   );
 }
@@ -305,5 +326,5 @@ function simple_access_profile_delete_confirm($form, &$form_state, $profile) {
  */
 function simple_access_profile_delete_confirm_submit($form, &$form_state) {
   simple_access_delete_profile($form_state['values']['pid']);
-  $form_state['redirect'] = 'admin/config/content/simple-access/profiles';
+  $form_state['redirect'] = 'admin/config/content/simple_access/profiles';
 }

@@ -15,7 +15,7 @@ function theme_simple_access_form($variables) {
     $variable = array('view' => 1, 'update' => 1, 'delete' => 1);
   }
   else {
-    $variable = variable_get('simple_access_display', array('view' => 1));
+    $variable = config_get('simple_access.settings','simple_access_display');
   }
   $options['header'] = array(t('Access Group'));
   if ((isset($variable['view']) && $variable['view']) || isset($form['#admin'])) {
@@ -31,21 +31,21 @@ function theme_simple_access_form($variables) {
   foreach (element_children($form) as $gid) {
     if (!isset($form['#access']) || $form['#access']) {
       $row = array(
-        array('data' => drupal_render($form[$gid]['name'])),
+        array('data' => backdrop_render($form[$gid]['name'])),
       );
       if ((isset($variable['view']) && $variable['view']) || isset($form['#admin'])) {
         $row[] = array(
-          'data' => drupal_render($form[$gid]['sa_view']),
+          'data' => backdrop_render($form[$gid]['sa_view']),
         );
       }
       if ((isset($variable['update']) && $variable['update']) || isset($form['#admin'])) {
         $row[] = array(
-          'data' => drupal_render($form[$gid]['sa_update']),
+          'data' => backdrop_render($form[$gid]['sa_update']),
         );
       }
       if ((isset($variable['delete']) && $variable['delete']) || isset($form['#admin'])) {
         $row[] = array(
-          'data' => drupal_render($form[$gid]['sa_delete']),
+          'data' => backdrop_render($form[$gid]['sa_delete']),
         );
       }
 
@@ -63,7 +63,7 @@ function theme_simple_access_form($variables) {
  * Theme simple access overview page as a draggable table.
  */
 function theme_simple_access_page_overview_list(&$form) {
-  drupal_add_tabledrag('sa-group-list', 'order', 'sibling', 'sa-group-weight');
+  backdrop_add_tabledrag('sa-group-list', 'order', 'sibling', 'sa-group-weight');
   $output = '';
   $options = array(
     'header' => array(t('Group'), t('Roles'), t('Weight'), t('Operations')),
@@ -73,10 +73,10 @@ function theme_simple_access_page_overview_list(&$form) {
   foreach (element_children($form['form'], TRUE) as $gid) {
     $options['rows'][] = array(
       'data' => array(
-        drupal_render($form['form'][$gid]['name']),
-        array('data' => drupal_render($form['form'][$gid]['roles']), 'class' => 'sa-group-roles'),
-        drupal_render($form['form'][$gid]['weight']),
-        drupal_render($form['form'][$gid]['ops']),
+        backdrop_render($form['form'][$gid]['name']),
+        array('data' => backdrop_render($form['form'][$gid]['roles']), 'class' => 'sa-group-roles'),
+        backdrop_render($form['form'][$gid]['weight']),
+        backdrop_render($form['form'][$gid]['ops']),
       ),
       'class' => array('draggable'),
     );
@@ -100,7 +100,7 @@ function theme_simple_access_page_overview_list(&$form) {
  * Theme a list of simple access profiles as draggable table.
  */
 function theme_simple_access_profile_list($form) {
-  drupal_add_tabledrag('sa-profile-list', 'order', 'sibling', 'sa-profile-weight');
+  backdrop_add_tabledrag('sa-profile-list', 'order', 'sibling', 'sa-profile-weight');
   $options = array(
     'header' => array(t('Name'), t('Weight'), t('Operations')),
     'rows' => array(),
@@ -111,9 +111,9 @@ function theme_simple_access_profile_list($form) {
   foreach (element_children($form['form']['profiles']) as $id) {
     $options['rows'][] = array(
       'data' => array(
-        array('data' => drupal_render($form['form']['profiles'][$id]['name'])),
-        array('data' => drupal_render($form['form']['profiles'][$id]['weight'])),
-        array('data' => drupal_render($form['form']['profiles'][$id]['operations'])),
+        array('data' => backdrop_render($form['form']['profiles'][$id]['name'])),
+        array('data' => backdrop_render($form['form']['profiles'][$id]['weight'])),
+        array('data' => backdrop_render($form['form']['profiles'][$id]['operations'])),
       ),
       'class' => array('draggable'),
     );

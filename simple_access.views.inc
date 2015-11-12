@@ -15,7 +15,7 @@ function simple_access_views_plugins() {
         'help' => t('Will only make the views available if the user is apart of the specificed group.'),
         'handler' => 'simple_access_views_plugin_group',
         'uses options' => TRUE,
-        'path' => drupal_get_path('module', 'simple_access') . '/views',
+        'path' => backdrop_get_path('module', 'simple_access') . '/views',
       ),
     ),
   );
