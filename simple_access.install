@@ -101,8 +101,7 @@ function simple_access_schema() {
         'default' => 0,
       ),
       'rid' => array(
-        'type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE,
-        'default' => 0,
+        'type' => 'varchar', 'length' => 20, 'not null' => TRUE,
       ),
     ),
     'primary key' => array('gid', 'rid'),
@@ -181,3 +180,4 @@ function simple_access_update_1000()
   $config->set('simple_access_display', update_variable_get('simple_access_display', ''));
   $config->set('simple_access_showgroups', update_variable_get('simple_access_showgroups', ''));
   $config->save();
+}
