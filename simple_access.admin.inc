@@ -271,7 +271,7 @@ function simple_access_settings_page() {
   $form['simple_access_display'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Display'),
-    '#default_value' => config_get('simple_access.settings','simple_access_display', array('view')),
+    '#default_value' => config_get('simple_access.settings','simple_access_display'),
     '#options' => $options,
     '#description' => t('Which options should appear on node add/edit pages for administrators? Select at least one.'),
     '#required' => TRUE,
