@@ -539,9 +539,7 @@ function simple_access_form_row($gid, $group, $access, $admin = FALSE) {
     $display = array('view' => 1, 'update' => 1, 'delete' => 1);
   }
   else {
-    $display = config_get('simple_access.settings','simple_access_display', array(
-      'view' => 1, 'update' => 0, 'delete' => 0)
-    );
+    $display = config_get('simple_access.settings','simple_access_display');
   }
 
   $defaults = array('sa_view' => NULL, 'sa_update' => NULL, 'sa_delete' => NULL);
