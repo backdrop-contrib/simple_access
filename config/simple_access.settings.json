@@ -1,7 +1,7 @@
 {
   "_config_name": "simple_access.settings",
   "simple_access_display": {
-    "update": "update",
+    "update": " ",
     "view": 0,
     "delete": 0
   },

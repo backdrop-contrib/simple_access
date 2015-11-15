@@ -144,7 +144,7 @@ function simple_access_permission() {
 function simple_access_node_prepare($node) {
   // Only use the defaults if this is a new node.
   if (empty($node->nid)) {
-    $defaults = config_get('simple_access.settings','simple_access_' . $node->type, array('simple_access' => array(), 'simple_access_profiles' => array(), 'simple_access_owner' => array()));
+    $defaults = config_get('simple_access.settings','simple_access_' . $node->type);
   }
   else {
     $defaults = array('simple_access' => array(), 'simple_access_profiles' => array(), 'simple_access_owner' => array());
@@ -415,7 +415,7 @@ function simple_access_form_node_form_alter(&$form, &$form_state, $form_id) {
  */
 function simple_access_form_node_type_form_alter(&$form, &$form_state) {
   $type = $form['old_type']['#value'];
-  $default = config_get('simple_access.settings','simple_access_' . $type, array('simple_access' => array(), 'simple_access_profiles' => array(), 'simple_access_owner' => array()));
+  $default = config_get('simple_access.settings','simple_access_' . $type);
 
   $tmp_form = simple_access_form((object) $default, TRUE);
 
@@ -679,7 +679,7 @@ function simple_access_group_select() {
 
   if (empty($groups)) {
     global $user;
-    $default_access = user_access('administer nodes') || config_get('simple_access.settings','simple_access_showgroups', FALSE);
+    $default_access = user_access('administer nodes') || config_get('simple_access.settings','simple_access_showgroups');
 
     $groups = array();
     $result = db_select('simple_access_groups', 'g')
@@ -1024,9 +1024,7 @@ function simple_access_group_grant($node, $context) {
 function simple_access_group_revoke_form($context = array()) {
   $form = array();
 
-  $display = config_get('simple_access.settings','simple_access_display', array(
-    'view' => 1, 'update' => 0, 'delete' => 0)
-  );
+  $display = config_get('simple_access.settings','simple_access_display');
 
   $form['sa_group_permissions'] = array(
     '#tree' => TRUE,
