@@ -10,7 +10,7 @@ class simple_access_views_plugin_group extends views_plugin_access {
    */
   public function access($account) {
     $roles = array_keys($account->roles);
-    $roles[] = $account->uid ? BACKDROP_AUTHENTICATED_RID : BACKDROP_ANONYMOUS_RID;
+    $roles[] = $account->uid ? BACKDROP_AUTHENTICATED_ROLE : BACKDROP_ANONYMOUS_ROLE;
 
     $groups = simple_access_groups_from_roles($roles);
     return array_intersect(array_filter($this->options['groups']), $groups);
