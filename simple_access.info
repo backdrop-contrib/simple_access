@@ -1,6 +1,7 @@
 name = Simple Access
 description = Provides simple hide/view access for nodes.
 backdrop = 1.x
+type = module
 package = Access control
 configure = admin/config/content/simple_access
 
