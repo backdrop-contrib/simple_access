@@ -615,11 +615,11 @@ function simple_access_form_row($gid, $group, $access, $admin = FALSE)
 function simple_access_get_roles($gid)
 {
   $result = db_select('simple_access_roles', 'r')
-    ->fields('r', array('rid'))
+    ->fields('r', array('role'))
     ->condition('gid', $gid)
     ->execute();
 
-  return array_keys($result->fetchAllAssoc('rid', PDO::FETCH_ASSOC));
+  return array_keys($result->fetchAllAssoc('role', PDO::FETCH_ASSOC));
 }
 
 /**
@@ -729,7 +729,7 @@ function simple_access_group_select()
       $roles = array_keys($user->roles);
       $query = db_select('simple_access_groups', 'g')
         ->fields('g', array('gid'))
-        ->condition('rid', $roles, 'IN')
+        ->condition('role', $roles, 'IN')
         ->groupBy('gid');
       $query->innerJoin('simple_access_roles', 'r', 'g.gid = r.gid');
       $result = $query->execute();
@@ -754,7 +754,7 @@ function simple_access_groups_from_roles($roles)
   $gids = array();
   $result = db_select('simple_access_roles', 'r')
     ->fields('r', array('gid'))
-    ->condition('rid', $roles, 'IN')
+    ->condition('role', $roles, 'IN')
     ->execute();
 
   $gids = $result->fetchAllAssoc('gid', PDO::FETCH_ASSOC);
@@ -804,7 +804,7 @@ function simple_access_save_group($edit)
       if ($value) {
         db_insert('simple_access_roles')
           ->fields(array(
-            'rid' => $key,
+            'role' => $key,
             'gid' => $edit['gid'],
           ))
           ->execute();

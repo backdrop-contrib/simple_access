@@ -23,8 +23,8 @@ function simple_access_page_overview() {
         '#markup' => $group['name'],
       );
       $r = array();
-      foreach ($group['roles'] as $rid) {
-        $r[] = $roles[$rid];
+      foreach ($group['roles'] as $role) {
+        $r[] = $roles[$role];
       }
       $form['groups'][$gid]['roles'] = array(
         '#markup' => implode(', ', $r),
@@ -82,7 +82,7 @@ function simple_access_group_form($form, &$form_state, $group = array()) {
 
   $form['name'] = array(
     '#type' => 'textfield',
-    '#title' => t('Name'),
+    '#title' => t('Access Group name'),
     '#default_value' => $group['name'],
     '#size' => 40,
     '#maxlength' => 80,
@@ -155,7 +155,7 @@ function simple_access_profile_list() {
   $profiles = $result->fetchAllAssoc('pid', PDO::FETCH_ASSOC);
   if (empty($profiles)) {
     backdrop_set_message(t('You have not yet defined any access profiles.'));
-    // backdrop_goto('admin/config/content/simple_access/profiles/add');
+    backdrop_goto('admin/config/content/simple_access/profiles/add');
   }
 
   $form['profiles'] = array(
@@ -198,7 +198,7 @@ function simple_access_profile_list_submit($form, $form_state) {
  */
 function simple_access_profile_form($form, $form_state, $profile = array()) {
   $profile += array('access' => FALSE);
-
+  backdrop_set_title(t('Define a profile'));
   if (!empty($profile['pid'])) {
     $form['pid'] = array(
       '#type' => 'value',
@@ -208,7 +208,7 @@ function simple_access_profile_form($form, $form_state, $profile = array()) {
 
   $form['name'] = array(
     '#type' => 'textfield',
-    '#title' => t('Name'),
+    '#title' => t('Profile name'),
     '#default_value' => isset($profile['name']) ? $profile['name'] : '',
     '#required' => TRUE,
   );
