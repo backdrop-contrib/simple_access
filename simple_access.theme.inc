@@ -98,37 +98,30 @@ function theme_simple_access_page_overview_list(&$form) {
 
 /**
  * Theme a list of simple access profiles as draggable table.
+ * Use function theme_filter_admin_overview from core module
+ * filter\filter.theme.inc as a model for this revised version.
  */
-function theme_simple_access_profile_list($form) {
-  backdrop_add_tabledrag('sa-profile-list', 'order', 'sibling', 'sa-profile-weight');
-  $options = array(
-    'header' => array(t('Name'), t('Weight'), t('Operations')),
-    'rows' => array(),
-    'attributes' => array('id' => 'sa-profile-list'),
-  );
-  $output = '';
+function theme_simple_access_profile_list($variables) {
+  $form =& $variables['form'];
 
-  foreach (element_children($form['form']['profiles']) as $id) {
-    $options['rows'][] = array(
+  $rows = array();
+  foreach (element_children($form['profiles']) as $id) {
+	  $form['profiles'][$id]['weight']['attribute']['class'] = array('sa-profile-weight');
+    $row = array(
       'data' => array(
-        array('data' => backdrop_render($form['form']['profiles'][$id]['name'])),
-        array('data' => backdrop_render($form['form']['profiles'][$id]['weight'])),
-        array('data' => backdrop_render($form['form']['profiles'][$id]['operations'])),
+        backdrop_render($form['profiles'][$id]['name']),
+        backdrop_render($form['profiles'][$id]['weight']),
+        backdrop_render($form['profiles'][$id]['operations']),
       ),
       'class' => array('draggable'),
     );
+		$rows[] = $row;
   }
+  $header = array(t('Name'), t('Weight'), t('Operations'));
+	$output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'sa-profile')));
+	$output .= backdrop_render_children($form);
 
-  if (empty($options['rows'])) {
-    $options['rows'][] = array(
-      array(
-        'data' => t('No profiles defined'),
-        'colspan' => 3,
-        'align' => 'center',
-      ),
-    );
-  }
-  $output .= theme('table', $options);
+	backdrop_add_tabledrag('sa-profile', 'order', 'sibling', 'sa-profile-weight');
 
   return $output;
 }
