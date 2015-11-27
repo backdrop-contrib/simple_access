@@ -143,9 +143,17 @@ function simple_access_permission()
 /**
  * Implements hook_node_prepare().
  */
-function simple_access_node_prepare($node)
-{
-  // Only use the defaults if this is a new node.
+function simple_access_node_prepare($node) {
+  //Check whether there are config settings for this type of node
+	$nodetype = $node->type;
+	$nodeconfig = array();
+	$nodeconfig = config_get('simple_access.settings','simple_access_' . $nodetype);
+	if(!$nodeconfig){
+    //use default config settings for this node type
+	  $nodeconfig = config_get('simple_access.settings','simple_access_default');
+		config_set('simple_access.settings' , 'simple_access_' . $nodetype, $nodeconfig);
+	}
+  // Use the defaults if this is a new node.
   if (empty($node->nid)) {
     $defaults = config_get('simple_access.settings', 'simple_access_' . $node->type);
   } else {
