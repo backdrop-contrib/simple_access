@@ -6,6 +6,9 @@
     "delete": 0
   },
   "simple_access_default": {
+    "simple_access_profiles": {
+      "1": 0
+    },
     "simple_access_owner": {
       "sa_view": 1,
       "sa_update": 1,
