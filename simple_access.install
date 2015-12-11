@@ -162,6 +162,30 @@ function simple_access_schema() {
     ),
     'primary key' => array('nid', 'pid'),
   );
+	$schema['simple_access_profiles_nodetype'] = array(
+    'fields' => array(
+		  'pntid' => array(
+				'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => "Primary Key: This entry's unique ID."
+			),
+      'type' => array(
+        'type' => 'varchar',
+				'length' => 50,
+				'not null' => TRUE,
+				'description' => "Name of node type."
+      ),
+      'pid' => array(
+        'type' => 'int',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+        'default' => 0,
+				'description' => "ID of profile."
+      ),
+		),
+		'primary key' => array('pntid'),
+  );
 
   return $schema;
 }

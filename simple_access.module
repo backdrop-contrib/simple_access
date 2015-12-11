@@ -94,6 +94,15 @@ function simple_access_menu()
     'type' => MENU_LOCAL_ACTION,
     'file' => 'simple_access.admin.inc',
   );
+  $items['admin/config/content/simple_access/profiles/apply'] = array(
+    'title' => 'Apply profile',
+    'page callback' => 'backdrop_get_form',
+    'page arguments' => array('simple_access_apply_profile_form'),
+    'access callback' => 'user_access',
+    'access arguments' => array('manage simple access'),
+    'type' => MENU_LOCAL_ACTION,
+    'file' => 'simple_access.admin.inc',
+  );
   $items['admin/config/content/simple_access/profiles/%simple_access_profile/edit'] = array(
     'title' => 'Edit Profile',
     'page callback' => 'backdrop_get_form',
@@ -143,16 +152,17 @@ function simple_access_permission()
 /**
  * Implements hook_node_prepare().
  */
-function simple_access_node_prepare($node) {
+function simple_access_node_prepare($node)
+{
   //Check whether there are config settings for this type of node
-	$nodetype = $node->type;
-	$nodeconfig = array();
-	$nodeconfig = config_get('simple_access.settings','simple_access_' . $nodetype);
-	if(!$nodeconfig){
+  $nodetype = $node->type;
+  $nodeconfig = array();
+  $nodeconfig = config_get('simple_access.settings', 'simple_access_' . $nodetype);
+  if (!$nodeconfig) {
     //use default config settings for this node type
-	  $nodeconfig = config_get('simple_access.settings','simple_access_default');
-		config_set('simple_access.settings' , 'simple_access_' . $nodetype, $nodeconfig);
-	}
+    $nodeconfig = config_get('simple_access.settings', 'simple_access_default');
+    config_set('simple_access.settings', 'simple_access_' . $nodetype, $nodeconfig);
+  }
   // Use the defaults if this is a new node.
   if (empty($node->nid)) {
     $defaults = config_get('simple_access.settings', 'simple_access_' . $node->type);
@@ -276,7 +286,8 @@ function simple_access_node_save($node)
     ->execute();
   if (isset($node->simple_access_profiles)) {
     foreach (array_filter($node->simple_access_profiles) as $pid) {
-      db_insert('simple_access_profiles_node')
+      db_merge('simple_access_profiles_node')
+        ->key(array('nid' => $node->nid))
         ->fields(array(
           'nid' => $node->nid,
           'pid' => $pid,
@@ -285,6 +296,83 @@ function simple_access_node_save($node)
     }
   }
 }
+
+/**
+ * Apply node information.
+ */
+function simple_access_node_save_apply($nodeprofile)
+{
+  $nid = $nodeprofile['nid'];
+  $pid = $nodeprofile['pid'];
+  $nodetype = $nodeprofile['type'];
+
+
+  //check whether this node has an entry in simple_access_owner
+  $owners = db_select('simple_access_owner', 'o')
+    ->fields('o', array('nid', 'sa_view', 'sa_update', 'sa_delete'))
+    ->condition('nid', $nid)
+    ->execute()
+    ->fetchAllAssoc('nid', PDO::FETCH_ASSOC);
+
+  //if there is no existing entry, insert defaults
+  $defaults = config_get('simple_access.settings', 'simple_access_' . $nodetype);
+  if (!$owners) {
+    if ($defaults) {
+      db_insert('simple_access_owner')
+        ->fields(array(
+          'nid' => $nid,
+          'sa_view' => $defaults['simple_access_owner']['sa_view'],
+          'sa_update' => $defaults['simple_access_owner']['sa_update'],
+          'sa_delete' => $defaults['simple_access_owner']['sa_delete'],
+        ))
+        ->execute();
+    } else {
+      db_insert('simple_access_owner')
+        ->fields(array(
+          'nid' => $nid,
+          'sa_view' => 1,
+          'sa_update' => 1,
+          'sa_delete' => 1,
+        ))
+        ->execute();
+    }
+  }
+
+  //now replace in simple_access_node - delete then insert
+  db_delete('simple_access_node')
+    ->condition('nid', $nid)
+    ->execute();
+
+  //need to insert a row for each value of gid within profile
+  //we need an input that is an array called $thisprofile
+  //from config we can get the groups/grants for the profile
+  //NO - have to use table simple_access_profile_access
+  //from table simple_access_profiles_access we can get
+  //the view/update/delete settings for each gid for this pid
+  //$pids = $defaults[simple_access_profiles];
+  $access = db_select('simple_access_profiles_access', 'g')
+    ->fields('g', array('gid', 'sa_view', 'sa_update', 'sa_delete'))
+    ->condition('pid', $pid)
+    ->execute()
+    ->fetchAllAssoc('gid', PDO::FETCH_ASSOC);
+
+  //$access contains the default access settings for this profile-grant
+  $gid = array();
+  foreach ($access as $gid) {
+    db_insert('simple_access_node')
+      ->fields(array(
+        'nid' => $nid,
+        'gid' => $gid['gid'],
+        'sa_view' => $gid['sa_view'],
+        'sa_update' => $gid['sa_update'],
+        'sa_delete' => $gid['sa_delete'],
+      ))
+      ->execute();
+  }
+
+  backdrop_set_message(t('You now need to !rebuild_permissions.', array('!rebuild_permissions' => l(t('rebuild permissions'), 'admin/reports/status/rebuild'))));
+}
+
 
 /**
  * Implements hook_node_delete().
@@ -298,23 +386,52 @@ function simple_access_node_delete($node)
   }
 }
 
+
 /**
  * Implements hook_node_access_records().
  */
 function simple_access_node_access_records($node)
 {
   $records = array();
-
   if (!empty($node->simple_access_profiles)) {
-    foreach (array_filter($node->simple_access_profiles) as $pid) {
-      $records[] = array(
-        'realm' => 'simple_access_profile',
-        'gid' => $pid,
-        'grant_view' => 1,
-        'grant_update' => 1,
-        'grant_delete' => 1,
-        'priority' => 0,
-      );
+    // this node has a simple_access_profile set
+    // we need to reset this to the current defaults
+    // for one or more gids
+    // as stored in table simple_access_profiles_access
+    // first get the pid for this type of node
+    // from table simple_access_profiles_nodetype
+
+    $pid = db_select('simple_access_profiles_nodetype', 'p')
+      ->fields('p', array('pid'))
+      ->condition('p.type', $node->type)
+      ->execute()
+      ->fetchAllAssoc('pid', PDO::FETCH_ASSOC);
+
+    // if this type of node does not have a profile
+    // skip setting of records for simple_access_profile
+
+    if (!empty($pid)) {
+      // get default settings for this $pid
+      // note - there may be more than one gid
+      $defaults = db_select('simple_access_profiles_access', 'd')
+        ->fields('d', array('pid', 'gid', 'sa_view', 'sa_update', 'sa_delete'))
+        ->condition('d.pid', $pid)
+        ->execute()
+        ->fetchAllAssoc('gid', PDO::FETCH_ASSOC);
+
+      // for each value of gid set current defaults
+
+      $default = array();
+      foreach ($defaults as $default) {
+        $records[] = array(
+          'realm' => 'simple_access_profile',
+          'gid' => $default['gid'],
+          'grant_view' => $default['sa_view'],
+          'grant_update' => $default['sa_update'],
+          'grant_delete' => $default['sa_delete'],
+          'priority' => 0,
+        );
+      }
     }
   }
 
@@ -354,29 +471,52 @@ function simple_access_node_access_records($node)
 
 /**
  * Implements hook_node_grants().
+ * Tell the node access system what grant IDs the user belongs to for each
+ * realm, based on the operation being performed.
  *
- * @TODO implement to correctly return groups in all cases.
+ * When the user tries to perform an operation on the node, Backdrop calls
+ * hook_node_grants() to determine grant ID and realm for the user. Backdrop
+ * looks up the grant ID and realm for the node, and compares them to the
+ * grant ID and realm provided here. If grant ID and realm match for both
+ * user and node, then the operation is allowed.
+ * $account: The user object whose grants are requested.
+ * $op: The node operation to be performed, such as 'view', 'update', or 'delete'.
+ * Return value: An array whose keys are "realms" of grants, and whose values are
+ * arrays of the grant IDs within this realm that this user is being granted.
  */
+
 function simple_access_node_grants($account, $op)
 {
-  $gids = simple_access_groups_from_roles(array_keys($account->roles));
-  if (!empty($gids)) {
-    $grants['simple_access'] = array_keys($gids);
-  }
+  $grants = array();
+  // make sure we have an authenticated user
+  if ($account->uid) {
+    $user = $account->uid;
+    $roles = array_values($account->roles);
+    // we now need the grant IDs for role.
+    // get them by using function simple_access_groups_from_roles
+    $gids = simple_access_groups_from_roles($roles);
+    if (!empty($gids)) {
+      $grants['simple_access'] = array_keys($gids);
+    }
+    // we now need profile IDs that permit this operation
+    $pids = array();
+    if (in_array($op, array('view', 'update', 'delete')) && !empty($gids)) {
+      $pids = db_select('simple_access_profiles_access', 'p')
+        ->fields('p', array('pid'))
+        ->condition('sa_' . $op, '1')
+        ->condition('gid', $gids, 'IN')
+        ->distinct()
+        ->execute()
+        ->fetchAllAssoc('pid', PDO::FETCH_ASSOC);
 
-  if (in_array($op, array('view', 'update', 'delete')) && !empty($gids)) {
-    $pids = db_select('simple_access_profiles_access', 'p')
-      ->fields('p', array('pid'))
-      ->condition('sa_' . $op, '1')
-      ->condition('gid', $gids, 'IN')
-      ->distinct()
-      ->execute()
-      ->fetchAllAssoc('pid', PDO::FETCH_ASSOC);
-
-    if (!empty($pids)) {
-      $grants['simple_access_profiles'] = $pids;
+      if (!empty($pids)) {
+        foreach ($pids as $grant) {
+          $grants['simple_access_profiles'] = array_values($grant);
+        }
+      }
     }
   }
+  // add in a grant for the author realm
   $grants['simple_access_author'] = array($account->uid);
   return $grants;
 }
@@ -564,6 +704,13 @@ function simple_access_form($node, $admin = FALSE)
 
     }
   }
+
+  $form['simple_access']['simple_access']['extra'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Update access settings for all nodes of this type'),
+    '#default_value' => 0,
+    '#access' => $admin,
+  );
   return $form;
 }
 

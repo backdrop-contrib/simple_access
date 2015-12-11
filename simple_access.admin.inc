@@ -195,6 +195,7 @@ function simple_access_profile_list_submit($form, $form_state) {
 
 /**
  * Simple Access profile form.
+ * Used for 'add profile'
  */
 function simple_access_profile_form($form, $form_state, $profile = array()) {
   $profile += array('access' => FALSE);
@@ -255,6 +256,102 @@ function simple_access_profile_form_submit($form, &$form_state) {
     }
   }
 
+  $form_state['redirect'] = 'admin/config/content/simple_access/profiles';
+}
+
+/**
+ * Simple Access apply profile form.
+ */
+function simple_access_apply_profile_form() {
+  backdrop_set_title(t('Apply a profile to a content type'));
+  $nodetypelist = node_type_get_names();
+
+	  $form['nodetype'] = array(
+    '#type' => 'radios',
+    '#title' => t('Types of content'),
+    '#default_value' => '',
+    '#options' => $nodetypelist,
+    '#description' => t('Choose which type of content for the profile'),
+		);
+
+	// get list of profiles
+
+	$profilenames = simple_access_get_profiles_select();
+
+
+  $form['profileid'] = array(
+    '#type' => 'radios',
+    '#title' => t('Current profiles'),
+    '#default_value' => '',
+    '#options' => $profilenames,
+    '#description' => t('Choose which profile'),
+		);
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Apply this'),
+  );
+  return $form;
+}
+
+/**
+ * Apply profile form submit callback.
+ */
+function simple_access_apply_profile_form_submit($form, &$form_state) {
+	$selectednodetype = $form['nodetype']['#value'];
+	$pid = $form['profileid']['#value'];
+	//add entry to data table simple_access_profiles_nodetype
+	//requires node type and pid
+  db_merge('simple_access_profiles_nodetype')
+	        ->key(array('type' => $selectednodetype))
+          ->fields(array(
+            'pid' => $pid,
+            'type' => $selectednodetype,
+          ))
+          ->execute();
+
+	//Check whether there are config settings for this type of node
+	$nodetype = $selectednodetype;
+	$nodeconfig = array();
+	$nodeconfig = config_get('simple_access.settings','simple_access_' . $nodetype);
+	if(!$nodeconfig){
+	  $nodeconfig = config_get('simple_access.settings','simple_access_default');
+		config_set('simple_access.settings' , 'simple_access_' . $nodetype, $nodeconfig);
+	}
+
+	//now step through each node of type $selectednodetype
+	//and set data table simple_access_profile_node
+	//to record the profile (pid) for each node
+	//
+	//need an array listing nodes of selected type
+	//from table node, get nid for type
+
+	$nodelist = array();
+	$nodelist = db_select('node', 'n')
+    ->fields('n', array('nid', 'type','title'))
+    ->condition('n.type', $selectednodetype)
+    ->addTag('node_access')
+		->execute()
+    ->fetchAllAssoc('nid', PDO::FETCH_ASSOC);
+
+
+	foreach($nodelist as $n){
+	  db_merge('simple_access_profiles_node')
+		      ->key(array('nid' => $n['nid']))
+          ->fields(array(
+            'nid' => $n['nid'],
+            'pid' => $pid
+          ))
+          ->execute();
+		//now update each node
+
+		$nodeprofile = array();
+		$nodeprofile['nid'] = $n['nid'];
+		$nodeprofile['pid'] = $pid;
+		$nodeprofile['type'] = $selectednodetype;
+
+		simple_access_node_save_apply($nodeprofile);
+  }
   $form_state['redirect'] = 'admin/config/content/simple_access/profiles';
 }
 
