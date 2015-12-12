@@ -24,4 +24,12 @@ to all nodes of this type. The realm 'simple_access_profile' is used for this.
 At the time of writing there is more work to be done to improve
 the user interface.
 
+Other useful references:
+
+drupal.org/node/270000 : Controlling Access to Content overview
+
+www.phase2technology.com/blog/drupal7nodeaccessgrantslocksandkeys/ :
+Node Access: Who wins?
+
+
 11 December 2015
