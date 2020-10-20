@@ -154,18 +154,13 @@ function simple_access_permission()
  */
 function simple_access_node_prepare($node)
 {
-  //Check whether there are config settings for this type of node
-  $nodetype = $node->type;
-  $nodeconfig = array();
-  $nodeconfig = config_get('simple_access.settings', 'simple_access_' . $nodetype);
-  if (!$nodeconfig) {
-    //use default config settings for this node type
-    $nodeconfig = config_get('simple_access.settings', 'simple_access_default');
-    config_set('simple_access.settings', 'simple_access_' . $nodetype, $nodeconfig);
-  }
+  $defaults = config_get('simple_access.settings', 'simple_access_default');
+  $nodeconfig = config_get('simple_access.settings', 'simple_access_' . $node->type);
+
   // Use the defaults if this is a new node.
-  if (empty($node->nid)) {
-    $defaults = config_get('simple_access.settings', 'simple_access_' . $node->type);
+  if (empty($node->nid) && $nodeconfig) {
+    //use default config settings for this node type
+    $defaults = $nodeconfig;
   } else {
     $defaults = array('simple_access' => array(), 'simple_access_profiles' => array(), 'simple_access_owner' => array());
   }
@@ -634,13 +629,10 @@ function simple_access_form($node, $admin = FALSE)
     return;
   }
 
-  $user_groups = array();
-  $owner_priv = array();
+  $profile = is_array($node->simple_access_profiles) ? $node->simple_access_profiles : array();
+  $user_groups = is_array($node->simple_access) ? array_filter($node->simple_access, '_simple_access_filter_access') : array();
+  $owner_priv = is_array($node->simple_access_owner) ? array_filter($node->simple_access_owner) : array();
 
-  if (isset($node->type)) {
-    $user_groups = is_array($node->simple_access) ? array_filter($node->simple_access, '_simple_access_filter_access') : array();
-    $owner_priv = is_array($node->simple_access_owner) ? array_filter($node->simple_access_owner) : array();
-  }
   // Set up the outer fieldset.
   $form['simple_access'] = array(
     '#title' => t('Access'),
@@ -661,7 +653,7 @@ function simple_access_form($node, $admin = FALSE)
     $form['simple_access']['simple_access_profiles'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Access profile'),
-      '#default_value' => $node->simple_access_profiles,
+      '#default_value' => $profile,
       '#options' => $profiles,
       '#access' => user_access('assign access to profiles') || user_access('administer nodes'),
     );
@@ -693,15 +685,8 @@ function simple_access_form($node, $admin = FALSE)
     $form['simple_access']['simple_access']['owner'] = simple_access_form_row('owner', $group, $access, $admin);
     $form['simple_access']['simple_access']['owner']['#parents'] = array('simple_access_owner');
 
-    if (isset($node->uid)) {
-      foreach ($groups as $gid => $group) {
-        $form['simple_access']['simple_access'][$gid] = simple_access_form_row($gid, $group, $node->simple_access, $admin);
-      }
-    } else {
-      foreach ($groups as $gid => $group) {
-        $form['simple_access']['simple_access'][$gid] = simple_access_form_row($gid, $group, null, $admin);
-      }
-
+    foreach ($groups as $gid => $group) {
+      $form['simple_access']['simple_access'][$gid] = simple_access_form_row($gid, $group, $node->simple_access, $admin);
     }
   }
 

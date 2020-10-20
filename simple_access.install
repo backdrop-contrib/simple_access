@@ -15,7 +15,7 @@ function simple_access_install() {
     ->execute();
 
   $t = get_t();
-  backdrop_set_message($t('simple access has created the required tables.'));
+  backdrop_set_message($t('Simple Access has created the required tables.'));
 }
 
 
@@ -209,9 +209,29 @@ function simple_access_update_1000() {
 }
 
 /**
- * Delete unused variables.
+ * Clean up config.
  */
 function simple_access_update_1001() {
+  $config = config('simple_access.settings');
+  $config->set('simple_access_default', update_variable_get('simple_access_default', array(
+    "simple_access_profiles" => array(
+      "1" => 0,
+    ),
+    "simple_access_owner" => array(
+      "sa_view" => 1,
+      "sa_update" => 1,
+      "sa_delete" => 1,
+    ),
+    "simple_access" => array(
+      "1" => array(
+        "sa_view" => 1,
+        "sa_update" => 0,
+        "sa_delete" => 0,
+      ),
+    ),
+  )));
+  $config->save();
+
   // Delete variables.
   update_variable_del('simple_access_display');
   update_variable_del('simple_access_showgroups');
