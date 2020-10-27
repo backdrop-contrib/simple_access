@@ -1,9 +1,18 @@
+/**
+ * @file
+ * Attaches behaviors for the Simple Access module.
+ */
 (function ($) {
 
-Backdrop.behaviors.simple_accessFieldsetSummaries = {
+"use strict";
+
+Backdrop.behaviors.pathFieldsetSummaries = {
   attach: function (context) {
-    $('fieldset#edit-simple_access').backdropSetSummary(function (context) {
-      if (!$('.form-checkbox:checked', context).size()) {
+    $(context).find('fieldset.simple-access-settings').backdropSetSummary(function (element) {
+      var $element = $(element);
+      var checkbox = $element.find('.form-checkbox:checked').size();
+
+      if (!checkbox) {
         return Backdrop.t('Public access');
       }
       else {

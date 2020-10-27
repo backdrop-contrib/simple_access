@@ -47,15 +47,12 @@ directory for complete text.
 
 Herb v/d Dool <github.com/herbdool>
 
-## Current porting to Backdrop
-
-Graham Oliver <github.com/Graham-72/>
-
 ## Credits
 
-### Maintainer for Drupal:
+### Maintainer for Drupal
 
-- Gordon Heydon (gordon)
+- ported to Backdrop by Graham Oliver <github.com/Graham-72/>
+- Drupal 7 maintainer: Gordon Heydon (gordon)
 
 This port to Backdrop would not, of course, be possible without all
 the work done by the developer and maintainer of the Drupal module.

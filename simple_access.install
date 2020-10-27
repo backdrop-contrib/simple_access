@@ -104,7 +104,7 @@ function simple_access_schema() {
         'description' => "The access grant (group) ID.",
       ),
       'role' => array(
-        'type' => 'varchar', 'length' => 20, 'not null' => TRUE,
+        'type' => 'varchar', 'length' => 64, 'not null' => TRUE,
         'description' => "The role name.",
       ),
     ),
@@ -162,30 +162,6 @@ function simple_access_schema() {
     ),
     'primary key' => array('nid', 'pid'),
   );
-  $schema['simple_access_profiles_nodetype'] = array(
-    'fields' => array(
-      'pntid' => array(
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'description' => "Primary Key: This entry's unique ID."
-      ),
-      'type' => array(
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'description' => "Name of node type."
-      ),
-      'pid' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-        'description' => "ID of profile."
-      ),
-    ),
-    'primary key' => array('pntid'),
-  );
 
   return $schema;
 }
@@ -206,7 +182,7 @@ function simple_access_update_1000() {
   $config->set('simple_access_display', update_variable_get('simple_access_display', array()));
   $config->set('simple_access_showgroups', update_variable_get('simple_access_showgroups', 0));
   $config->save();
-}
+  }
 
 /**
  * Delete unused variables.
@@ -253,40 +229,13 @@ function simple_access_update_1002() {
   }
 
   db_drop_field('simple_access_roles', 'rid');
-}
+  }
 
 /**
- * Create new database table simple_access_profiles_nodetype.
+ * Drop database table simple_access_profiles_nodetype.
  */
 function simple_access_update_1003() {
   if (db_table_exists('simple_access_profiles_nodetype')) {
-    return;
+    db_drop_table('simple_access_profiles_nodetype');
   }
-
-  $schema['simple_access_profiles_nodetype'] = array(
-    'fields' => array(
-      'pntid' => array(
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'description' => "Primary Key: This entry's unique ID."
-      ),
-      'type' => array(
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'description' => "Name of node type."
-      ),
-      'pid' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-        'description' => "ID of profile."
-      ),
-    ),
-    'primary key' => array('pntid'),
-  );
-
-  db_create_table('simple_access_profiles_nodetype', $schema['simple_access_profiles_nodetype']);
 }
