@@ -2,8 +2,7 @@
 
 /**
  * @file
- * House all the admin functions in inc to make the foot print a lot
- * smaller.
+ * Admin functions.
  */
 
 /**
@@ -17,8 +16,7 @@ function simple_access_page_overview() {
       '#tree' => TRUE,
       '#theme' => 'simple_access_page_overview_list',
     );
-    foreach ($groups as $group) {
-      $gid = $group['gid'];
+    foreach ($groups as $gid => $group) {
       $form['groups'][$gid]['name'] = array(
         '#markup' => $group['name'],
       );
@@ -54,30 +52,36 @@ function simple_access_page_overview() {
  * Overview form submit callback.
  */
 function simple_access_page_overview_submit($form, &$form_state) {
+  $config = config('simple_access.settings');
   foreach ($form_state['values']['groups'] as $gid => $group) {
-    db_update('simple_access_groups')
-      ->condition('gid', $gid)
-      ->fields(array(
-        'weight' => $group['weight'],
-      ))
-      ->execute();
+    $config->set('groups.' . $gid . '.weight', $group['weight']);
   }
+  $config->save();
 }
 
 /**
  * Simple Access group form.
  */
 function simple_access_group_form($form, &$form_state, $group = array()) {
+  $config = config('simple_access.settings');
+
   if (!empty($group)) {
     backdrop_set_title(t('Edit Access Group'));
-    $form['gid'] = array(
-      '#type' => 'value',
-      '#value' => $group['gid'],
-    );
+    $gid = $group['gid'];
   }
   else {
     backdrop_set_title(t('Create Access Group'));
+    $groups = $config->get('groups');
+    $gid = 1;
+    if (!empty($groups)) {
+      $gid = max(array_keys($groups)) + 1;
+    }
   }
+  $form['gid'] = array(
+    '#type' => 'value',
+    '#value' => $gid,
+  );
+
   $group += array('name' => '', 'roles' => array(), 'weight' => 0);
 
   $form['name'] = array(
@@ -146,13 +150,11 @@ function simple_access_delete_group_confirm_submit($form, &$form_state) {
  */
 function simple_access_profile_list() {
   $form = array();
-  $result = db_select('simple_access_profiles', 'p')
-    ->fields('p', array('pid', 'name', 'weight'))
-    ->orderBy('weight', 'ASC')
-    ->orderBy('name', 'ASC')
-    ->execute();
-
-  $profiles = $result->fetchAllAssoc('pid', PDO::FETCH_ASSOC);
+  $profiles = config_get('simple_access.settings', 'profiles');
+  if (empty($profiles)) {
+    $profiles = array();
+  }
+  backdrop_sort($profiles);
   if (empty($profiles)) {
     backdrop_set_message(t('You have not yet defined any access profiles.'));
     // backdrop_goto('admin/config/content/simple-access/profiles/add');
@@ -161,17 +163,17 @@ function simple_access_profile_list() {
   $form['profiles'] = array(
     '#tree' => TRUE,
   );
-  foreach ($profiles as $row) {
-    $form['profiles'][$row['pid']]['name'] = array(
+  foreach ($profiles as $pid => $row) {
+    $form['profiles'][$pid]['name'] = array(
       '#markup' => $row['name'],
     );
-    $form['profiles'][$row['pid']]['weight'] = array(
+    $form['profiles'][$pid]['weight'] = array(
       '#type' => 'weight',
       '#default_value' => $row['weight'],
       '#attributes' => array('class' => array('sa-profile-weight')),
     );
-    $form['profiles'][$row['pid']]['operations'] = array(
-      '#markup' => l(t('edit'), 'admin/config/content/simple-access/profiles/' . $row['pid'] . '/edit') . ' ' . l(t('delete'), 'admin/config/content/simple-access/profiles/' . $row['pid'] . '/delete'),
+    $form['profiles'][$pid]['operations'] = array(
+      '#markup' => l(t('edit'), 'admin/config/content/simple-access/profiles/' . $pid . '/edit') . ' ' . l(t('delete'), 'admin/config/content/simple-access/profiles/' . $pid . '/delete'),
     );
   }
 
@@ -187,10 +189,11 @@ function simple_access_profile_list() {
  * Profile list submit callback.
  */
 function simple_access_profile_list_submit($form, $form_state) {
+  $config = config('simple_access.settings');
   foreach ($form_state['values']['profiles'] as $pid => $profile) {
-    $profile['pid'] = $pid;
-    backdrop_write_record('simple_access_profiles', $profile, array('pid'));
+    $config->set('profiles.' . $pid . '.weight', (int) $profile['weight']);
   }
+  $config->save();
 }
 
 /**
@@ -211,6 +214,12 @@ function simple_access_profile_form($form, $form_state, $profile = array()) {
     '#title' => t('Name'),
     '#default_value' => isset($profile['name']) ? $profile['name'] : '',
     '#required' => TRUE,
+  );
+
+  $form['weight'] = array(
+    '#type' => 'hidden',
+    '#default_value' => isset($profile['weight']) ? $profile['weight'] : 0,
+    '#delta' => 10,
   );
 
   $form['access'] = array(
@@ -235,25 +244,23 @@ function simple_access_profile_form($form, $form_state, $profile = array()) {
  * Profile form submit callback.
  */
 function simple_access_profile_form_submit($form, &$form_state) {
-  if (!empty($form_state['values']['pid'])) {
-    backdrop_write_record('simple_access_profiles', $form_state['values'], array('pid'));
+  $config = config('simple_access.settings');
+  $profiles = $config->get('profiles');
+  $pid = 1;
+  if (!empty($profiles)) {
+    $pid = max(array_keys($profiles)) + 1;
   }
-  else {
-    backdrop_write_record('simple_access_profiles', $form_state['values']);
+  if (!empty($form_state['values']['pid'])) {
+    $pid = $form_state['values']['pid'];
   }
 
-  db_delete('simple_access_profiles_access')
-    ->condition('pid', $form_state['values']['pid'])
-    ->execute();
-  if (isset($form_state['values']['access'])) {
-    foreach ($form_state['values']['access'] as $gid => $access) {
-      if ($access['sa_view'] || $access['sa_update'] || $access['sa_delete']) {
-        $access['pid'] = $form_state['values']['pid'];
-        $access['gid'] = $gid;
-        backdrop_write_record('simple_access_profiles_access', $access);
-      }
-    }
-  }
+  $config->set('profiles.' . $pid, array(
+    'pid' => (int) $pid,
+    'name' => $form_state['values']['name'],
+    'weight' => (int) $form_state['values']['weight'],
+    'access' => isset($form_state['values']['access']) ? $form_state['values']['access'] : array(),
+  ));
+  $config->save();
 
   $form_state['redirect'] = 'admin/config/content/simple-access/profiles';
 }

@@ -347,23 +347,26 @@ function simple_access_node_access_records($node) {
 function simple_access_node_grants($account, $op) {
   $gids = simple_access_groups_from_roles($account->roles);
   if (!empty($gids)) {
-    $grants['simple_access'] = array_keys($gids);
+    $grants['simple_access'] = $gids;
   }
 
   if (in_array($op, array('view', 'update', 'delete')) && !empty($gids)) {
-    $pids = db_select('simple_access_profiles_access', 'p')
-      ->fields('p', array('pid'))
-      ->condition('sa_' . $op, '1')
-      ->condition('gid', $gids, 'IN')
-      ->distinct()
-      ->execute()
-      ->fetchAllAssoc('pid', PDO::FETCH_ASSOC);
+    $pids = array();
+    $profiles = config_get('simple_access.settings', 'profiles');
+    foreach ($profiles as $pid => $profile) {
+      foreach ($gids as $gid) {
+        if (!empty($profile['access'][$gid]['sa_' . $op])) {
+          $pids[$pid] = array('pid' => $pid);
+        }
+      }
+    }
 
     if (!empty($pids)) {
       $grants['simple_access_profiles'] = $pids;
     }
   }
   $grants['simple_access_author'] = array($account->uid);
+
   return $grants;
 }
 
@@ -376,22 +379,25 @@ function simple_access_node_access_explain($row) {
       return t('Access for the content owner');
 
     case 'simple_access':
-      $groups = simple_access_get_groups();
-      return t('Access restrictions for the "%group" group', array('%group' => $groups[$row->gid]['name']));
+      $group = simple_access_get_groups($row->gid);
+      if ($group) {
+        return t('Access restrictions for the "%group" group', array('%group' => $group['name']));
+      }
 
     case 'simple_access_profile':
-      $groups = simple_access_get_groups();
+      $message = '';
+      $group = simple_access_get_groups($row->gid);
       $profiles = simple_access_get_profiles();
-      $profile = $profiles[$row->gid];
-
-      $message = t('Access restrictions for profile "%profile"<br /><dt>', array('%profile' => $profile['name']));
-
-      if (!empty($profile['access'])) {
-        foreach ($profile['access'] as $gid => $access) {
-          $perms = array(t('View') => $access['sa_view'], t('Update') => $access['sa_update'], t('Delete') => $access['sa_delete']);
-          $message .= t('"%group" group can @perm.', array('%group' => $groups[$gid]['name'], '@perm' => implode(', ', array_keys(array_filter($perms)))));
+      foreach ($profiles as $profile) {
+        if (!empty($profile['access']) && isset($profile['access'][$row->gid])) {
+          $message = t('Access restrictions for profile "%profile"<br /><dt>', array('%profile' => $profile['name']));
+          foreach ($profile['access'] as $gid => $access) {
+            $perms = array(t('View') => $access['sa_view'], t('Update') => $access['sa_update'], t('Delete') => $access['sa_delete']);
+            $message .= t('"%group" group can @perm.', array('%group' => $group['name'], '@perm' => implode(', ', array_keys(array_filter($perms)))));
+          }
         }
       }
+
       $message .= '</dt>';
 
       return $message;
@@ -588,12 +594,7 @@ function simple_access_form_row($gid, $group, $access, $admin = FALSE) {
  * Get all simple access roles.
  */
 function simple_access_get_roles($gid) {
-  $result = db_select('simple_access_roles', 'r')
-    ->fields('r', array('role'))
-    ->condition('gid', $gid)
-    ->execute();
-
-  return array_keys($result->fetchAllAssoc('role', PDO::FETCH_ASSOC));
+  return config_get('simple_access.settings', 'groups.' . $gid . '.roles');
 }
 
 /**
@@ -616,59 +617,32 @@ function _simple_access_filter_profiles($a) {
  * Get simple access profiles.
  */
 function simple_access_get_profiles($pid = NULL) {
+  $config = config('simple_access.settings');
   $profiles = array();
-
-  $query = db_select('simple_access_profiles', 'p')
-    ->fields('p', array('pid', 'name'))
-    ->orderBy('weight', 'ASC')
-    ->orderBy('name');
+  $profiles = $config->get('profiles');
+  backdrop_sort($profiles, array('weight', 'name'));
 
   if ($pid) {
-    $query->condition('pid', $pid);
+    $profiles = $config->get('profiles.' . $pid);
   }
-  $profiles = $query->execute()
-    ->fetchAllAssoc('pid', PDO::FETCH_ASSOC);
 
-  $query = db_select('simple_access_profiles_access', 'a')
-    ->fields('a', array('pid', 'gid', 'sa_view', 'sa_update', 'sa_delete'))
-    ->orderBy('pid');
-
-  if ($pid) {
-    $query->condition('pid', $pid);
-  }
-  $result = $query->execute();
-
-  while ($a = $result->fetchAssoc(PDO::FETCH_ASSOC)) {
-    if (isset($profiles[$a['pid']])) {
-      $profiles[$a['pid']]['access'][$a['gid']] = $a;
-    }
-  }
-  return isset($pid) ? $profiles[$pid] : $profiles;
+  return $profiles;
 }
 
 /**
  * Return list of groups.
  */
 function simple_access_get_groups($gid = NULL) {
-  $groups = array();
-  $query = db_select('simple_access_groups', 'g')
-    ->fields('g', array('gid', 'name', 'weight'))
-    ->orderBy('weight', 'ASC')
-    ->orderBy('name', 'ASC')
-    ->distinct(TRUE);
-
+  $config = config('simple_access.settings');
+  $groups = $config->get('groups');
+  if (empty($groups)) {
+    $groups = array();
+  }
+  backdrop_sort($groups);
   if ($gid) {
-    $query->condition('gid', $gid);
+    $groups = $config->get('groups.' . $gid);
   }
-  $result = $query->execute();
-
-  foreach ($result->fetchAllAssoc('gid', PDO::FETCH_ASSOC) as $g) {
-    $groups[$g['gid']]['name'] = $g['name'];
-    $groups[$g['gid']]['gid'] = $g['gid'];
-    $groups[$g['gid']]['weight'] = $g['weight'];
-    $groups[$g['gid']]['roles'] = simple_access_get_roles($g['gid']);
-  }
-  return $gid ? $groups[$gid] : $groups;
+  return $groups;
 }
 
 /**
@@ -681,29 +655,24 @@ function simple_access_group_select() {
     global $user;
     $default_access = user_access('administer nodes') || config_get('simple_access.settings', 'simple_access_showgroups');
 
-    $groups = array();
-    $result = db_select('simple_access_groups', 'g')
-      ->fields('g', array('gid', 'name'))
-      ->orderBy('weight')
-      ->orderBy('name')
-      ->execute();
+    $groups = config_get('simple_access.settings', 'groups');
+    if (empty($groups)) {
+      $groups = array();
+    } else {
+      backdrop_sort($groups, array('weight', 'name'));
+    }
 
-    while ($group = $result->fetchAssoc(PDO::FETCH_ASSOC)) {
-      $groups[$group['gid']] = $group;
-      $groups[$group['gid']]['access'] = $default_access;
+    foreach ($groups as $gid => $group) {
+      $groups[$gid]['access'] = $default_access;
     }
 
     if (!$default_access) {
       // Return just groups for which user is a member.
       $roles = array_keys($user->roles);
-      $query = db_select('simple_access_groups', 'g')
-        ->fields('g', array('gid'))
-        ->condition('role', $roles, 'IN')
-        ->groupBy('gid');
-      $query->innerJoin('simple_access_roles', 'r', 'g.gid = r.gid');
-      $result = $query->execute();
-      while ($group = $result->fetchAssoc(PDO::FETCH_ASSOC)) {
-        $groups[$group['gid']]['access'] = TRUE;
+      foreach ($groups as $gid => $group) {
+        if (array_intersect($group['roles'], $roles)) {
+          $groups[$gid]['access'] = TRUE;
+        }
       }
     }
   }
@@ -720,12 +689,13 @@ function simple_access_groups_from_roles($roles) {
   // There probably should be some 'static' stuff going on here
   // always return gid 0 just to be safe.
   $gids = array();
-  $result = db_select('simple_access_roles', 'r')
-    ->fields('r', array('gid'))
-    ->condition('role', $roles, 'IN')
-    ->execute();
+  $groups = config_get('simple_access.settings', 'groups');
+  foreach ($groups as $gid => $group) {
+    if (array_intersect($group['roles'], $roles)) {
+      $gids[] = $gid;
+    }
+  }
 
-  $gids = $result->fetchAllAssoc('gid', PDO::FETCH_ASSOC);
   return $gids;
 }
 
@@ -746,60 +716,38 @@ function simple_access_groups_check_user($groups) {
  * Save group of roles into the database.
  */
 function simple_access_save_group($edit) {
-  if (!empty($edit['gid'])) {
-    db_merge('simple_access_groups')
-      ->key(array('gid' => $edit['gid']))
-      ->fields(array(
-        'name' => $edit['name'],
-        'weight' => $edit['weight'],
-      ))
-      ->execute();
-  }
-  else {
-    $edit['gid'] = db_insert('simple_access_groups', array('return' => Database::RETURN_INSERT_ID))
-      ->fields(array(
-        'name' => $edit['name'],
-        'weight' => $edit['weight'],
-      ))
-      ->execute();
-  }
-  db_delete('simple_access_roles')
-    ->condition('gid', $edit['gid'])
-    ->execute();
-  if (is_array($edit['roles'])) {
-    foreach ($edit['roles'] as $key => $value) {
-      if ($value) {
-        db_insert('simple_access_roles')
-          ->fields(array(
-            'role' => $key,
-            'gid' => $edit['gid'],
-          ))
-          ->execute();
-      }
-    }
-  }
+  config_set('simple_access.settings', 'groups.' . $edit['gid'], array(
+    'gid' => $edit['gid'],
+    'name' => $edit['name'],
+    'weight' => (int) $edit['weight'],
+    'roles' => array_keys(array_filter($edit['roles'])),
+  ));
 }
 
 /**
  * Delete profile from all 3 tables.
  */
 function simple_access_delete_profile($pid) {
-  foreach (array('simple_access_profiles', 'simple_access_profiles_access', 'simple_access_profiles_node') as $table) {
-    db_delete($table)
-      ->condition('pid', $pid)
-      ->execute();
-  }
+  db_delete('simple_access_profiles_node')
+    ->condition('pid', $pid)
+    ->execute();
+  config_clear('simple_access.settings', 'profiles.' . $pid);
 }
 
 /**
  * Delete group from all 3 tables.
  */
 function simple_access_delete_group($gid) {
-  foreach (array('simple_access_roles', 'simple_access_groups', 'simple_access_node') as $table) {
-    db_delete($table)
-      ->condition('gid', $gid)
-      ->execute();
+  $config = config('simple_access.settings');
+  db_delete('simple_access_node')
+    ->condition('gid', $gid)
+    ->execute();
+  $config->clear('groups.' . $gid);
+  $profiles = $config->get('profiles');
+  foreach ($profiles as $pid => $profile) {
+    $config->clear('profiles.' . $pid . '.access.' . $gid);
   }
+  $config->save();
 }
 
 /**
