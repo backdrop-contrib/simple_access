@@ -14,9 +14,8 @@
 /**
  * Implements hook_menu().
  */
-function simple_access_menu()
-{
-  $items['admin/config/content/simple_access'] = array(
+function simple_access_menu() {
+  $items['admin/config/content/simple-access'] = array(
     'title' => 'Simple Access',
     'description' => 'Configure node access',
     'page callback' => 'backdrop_get_form',
@@ -26,7 +25,7 @@ function simple_access_menu()
     'file' => 'simple_access.admin.inc',
     'type' => MENU_NORMAL_ITEM,
   );
-  $items['admin/config/content/simple_access/settings'] = array(
+  $items['admin/config/content/simple-access/settings'] = array(
     'title' => 'Settings',
     'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_settings_page'),
@@ -37,7 +36,7 @@ function simple_access_menu()
     'file' => 'simple_access.admin.inc',
     'weight' => -1,
   );
-  $items['admin/config/content/simple_access/groups'] = array(
+  $items['admin/config/content/simple-access/groups'] = array(
     'title' => 'Groups',
     'access callback' => 'user_access',
     'access arguments' => array('manage simple access'),
@@ -47,7 +46,7 @@ function simple_access_menu()
     'description' => 'Manage groups of users for node-specific access control.',
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/content/simple_access/groups/add'] = array(
+  $items['admin/config/content/simple-access/groups/add'] = array(
     'title' => 'Add group',
     'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_group_form'),
@@ -57,7 +56,7 @@ function simple_access_menu()
     'weight' => -6,
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/content/simple_access/groups/%simple_access_group/edit'] = array(
+  $items['admin/config/content/simple-access/groups/%simple_access_group/edit'] = array(
     'title' => 'Edit Group',
     'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_group_form', 5),
@@ -66,7 +65,7 @@ function simple_access_menu()
     'type' => MENU_CALLBACK,
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/content/simple_access/groups/%simple_access_group/delete'] = array(
+  $items['admin/config/content/simple-access/groups/%simple_access_group/delete'] = array(
     'title' => 'Delete Group',
     'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_delete_group_confirm', 5),
@@ -75,7 +74,7 @@ function simple_access_menu()
     'type' => MENU_CALLBACK,
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/content/simple_access/profiles'] = array(
+  $items['admin/config/content/simple-access/profiles'] = array(
     'title' => 'Profiles',
     'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_profile_list'),
@@ -85,7 +84,7 @@ function simple_access_menu()
     'description' => 'Maintain access profiles',
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/content/simple_access/profiles/add'] = array(
+  $items['admin/config/content/simple-access/profiles/add'] = array(
     'title' => 'Add profile',
     'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_profile_form'),
@@ -94,16 +93,7 @@ function simple_access_menu()
     'type' => MENU_LOCAL_ACTION,
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/content/simple_access/profiles/apply'] = array(
-    'title' => 'Apply profile',
-    'page callback' => 'backdrop_get_form',
-    'page arguments' => array('simple_access_apply_profile_form'),
-    'access callback' => 'user_access',
-    'access arguments' => array('manage simple access'),
-    'type' => MENU_LOCAL_ACTION,
-    'file' => 'simple_access.admin.inc',
-  );
-  $items['admin/config/content/simple_access/profiles/%simple_access_profile/edit'] = array(
+  $items['admin/config/content/simple-access/profiles/%simple_access_profile/edit'] = array(
     'title' => 'Edit Profile',
     'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_profile_form', 5),
@@ -112,7 +102,7 @@ function simple_access_menu()
     'type' => MENU_CALLBACK,
     'file' => 'simple_access.admin.inc',
   );
-  $items['admin/config/content/simple_access/profiles/%simple_access_profile/delete'] = array(
+  $items['admin/config/content/simple-access/profiles/%simple_access_profile/delete'] = array(
     'title' => 'Delete Profile',
     'page callback' => 'backdrop_get_form',
     'page arguments' => array('simple_access_profile_delete_confirm', 5),
@@ -127,8 +117,7 @@ function simple_access_menu()
 /**
  * Implements hook_perm().
  */
-function simple_access_permission()
-{
+function simple_access_permission() {
   return array(
     'manage simple access' => array(
       'title' => t('Administer Simple Access'),
@@ -152,22 +141,14 @@ function simple_access_permission()
 /**
  * Implements hook_node_prepare().
  */
-function simple_access_node_prepare($node)
-{
-  //Check whether there are config settings for this type of node
-  $nodetype = $node->type;
-  $nodeconfig = array();
-  $nodeconfig = config_get('simple_access.settings', 'simple_access_' . $nodetype);
-  if (!$nodeconfig) {
-    //use default config settings for this node type
-    $nodeconfig = config_get('simple_access.settings', 'simple_access_default');
-    config_set('simple_access.settings', 'simple_access_' . $nodetype, $nodeconfig);
-  }
-  // Use the defaults if this is a new node.
+function simple_access_node_prepare($node) {
+  // Only use the defaults if this is a new node.
+  $defaults = array('simple_access' => array(), 'simple_access_profiles' => array(), 'simple_access_owner' => array());
   if (empty($node->nid)) {
-    $defaults = config_get('simple_access.settings', 'simple_access_' . $node->type);
-  } else {
-    $defaults = array('simple_access' => array(), 'simple_access_profiles' => array(), 'simple_access_owner' => array());
+    $defaults_type = config_get('simple_access.settings', 'simple_access_' . $node->type);
+    if (!empty($defaults_type)) {
+      $defaults = $defaults_type;
+    }
   }
   foreach ($defaults as $key => $value) {
     if (!isset($node->{$key})) {
@@ -179,8 +160,7 @@ function simple_access_node_prepare($node)
 /**
  * Implements hook_node_load().
  */
-function simple_access_node_load($nodes, $types)
-{
+function simple_access_node_load($nodes, $types) {
 
   $nids = array();
   foreach ($nodes as $nid => $node) {
@@ -210,7 +190,8 @@ function simple_access_node_load($nodes, $types)
   foreach ($nodes as $nid => $node) {
     if (isset($owners[$nid])) {
       $node->simple_access_owner = $owners[$nid];
-    } else {
+    }
+    else {
       $node->simple_access_owner = array('sa_view' => 0, 'sa_update' => 0, 'sa_delete' => 0);
     }
   }
@@ -225,24 +206,21 @@ function simple_access_node_load($nodes, $types)
 /**
  * Implements hook_node_insert().
  */
-function simple_access_node_insert($node)
-{
+function simple_access_node_insert($node) {
   simple_access_node_save($node);
 }
 
 /**
  * Implements hook_node_update().
  */
-function simple_access_node_update($node)
-{
+function simple_access_node_update($node) {
   simple_access_node_save($node);
 }
 
 /**
  * Save node information.
  */
-function simple_access_node_save($node)
-{
+function simple_access_node_save($node) {
   if (isset($node->simple_access_owner)) {
     $node->simple_access_owner += array(
       'sa_view' => NULL, 'sa_update' => NULL, 'sa_delete' => NULL,
@@ -257,7 +235,8 @@ function simple_access_node_save($node)
         'sa_delete' => $node->simple_access_owner['sa_delete'],
       ))
       ->execute();
-  } else {
+  }
+  else {
     db_delete('simple_access_owner')
       ->condition('nid', $node->nid)
       ->execute();
@@ -286,8 +265,7 @@ function simple_access_node_save($node)
     ->execute();
   if (isset($node->simple_access_profiles)) {
     foreach (array_filter($node->simple_access_profiles) as $pid) {
-      db_merge('simple_access_profiles_node')
-        ->key(array('nid' => $node->nid))
+      db_insert('simple_access_profiles_node')
         ->fields(array(
           'nid' => $node->nid,
           'pid' => $pid,
@@ -298,87 +276,9 @@ function simple_access_node_save($node)
 }
 
 /**
- * Apply node information.
- */
-function simple_access_node_save_apply($nodeprofile)
-{
-  $nid = $nodeprofile['nid'];
-  $pid = $nodeprofile['pid'];
-  $nodetype = $nodeprofile['type'];
-
-
-  //check whether this node has an entry in simple_access_owner
-  $owners = db_select('simple_access_owner', 'o')
-    ->fields('o', array('nid', 'sa_view', 'sa_update', 'sa_delete'))
-    ->condition('nid', $nid)
-    ->execute()
-    ->fetchAllAssoc('nid', PDO::FETCH_ASSOC);
-
-  //if there is no existing entry, insert defaults
-  $defaults = config_get('simple_access.settings', 'simple_access_' . $nodetype);
-  if (!$owners) {
-    if ($defaults) {
-      db_insert('simple_access_owner')
-        ->fields(array(
-          'nid' => $nid,
-          'sa_view' => $defaults['simple_access_owner']['sa_view'],
-          'sa_update' => $defaults['simple_access_owner']['sa_update'],
-          'sa_delete' => $defaults['simple_access_owner']['sa_delete'],
-        ))
-        ->execute();
-    } else {
-      db_insert('simple_access_owner')
-        ->fields(array(
-          'nid' => $nid,
-          'sa_view' => 1,
-          'sa_update' => 1,
-          'sa_delete' => 1,
-        ))
-        ->execute();
-    }
-  }
-
-  //now replace in simple_access_node - delete then insert
-  db_delete('simple_access_node')
-    ->condition('nid', $nid)
-    ->execute();
-
-  //need to insert a row for each value of gid within profile
-  //we need an input that is an array called $thisprofile
-  //from config we can get the groups/grants for the profile
-  //NO - have to use table simple_access_profile_access
-  //from table simple_access_profiles_access we can get
-  //the view/update/delete settings for each gid for this pid
-  //$pids = $defaults[simple_access_profiles];
-  $access = db_select('simple_access_profiles_access', 'g')
-    ->fields('g', array('gid', 'sa_view', 'sa_update', 'sa_delete'))
-    ->condition('pid', $pid)
-    ->execute()
-    ->fetchAllAssoc('gid', PDO::FETCH_ASSOC);
-
-  //$access contains the default access settings for this profile-grant
-  $gid = array();
-  foreach ($access as $gid) {
-    db_insert('simple_access_node')
-      ->fields(array(
-        'nid' => $nid,
-        'gid' => $gid['gid'],
-        'sa_view' => $gid['sa_view'],
-        'sa_update' => $gid['sa_update'],
-        'sa_delete' => $gid['sa_delete'],
-      ))
-      ->execute();
-  }
-
-  backdrop_set_message(t('You now need to !rebuild_permissions.', array('!rebuild_permissions' => l(t('rebuild permissions'), 'admin/reports/status/rebuild'))));
-}
-
-
-/**
  * Implements hook_node_delete().
  */
-function simple_access_node_delete($node)
-{
+function simple_access_node_delete($node) {
   foreach (array('simple_access_node', 'simple_access_owner', 'simple_access_profiles_node') as $table) {
     db_delete($table)
       ->condition('nid', $node->nid)
@@ -386,52 +286,22 @@ function simple_access_node_delete($node)
   }
 }
 
-
 /**
  * Implements hook_node_access_records().
  */
-function simple_access_node_access_records($node)
-{
+function simple_access_node_access_records($node) {
   $records = array();
+
   if (!empty($node->simple_access_profiles)) {
-    // this node has a simple_access_profile set
-    // we need to reset this to the current defaults
-    // for one or more gids
-    // as stored in table simple_access_profiles_access
-    // first get the pid for this type of node
-    // from table simple_access_profiles_nodetype
-
-    $pid = db_select('simple_access_profiles_nodetype', 'p')
-      ->fields('p', array('pid'))
-      ->condition('p.type', $node->type)
-      ->execute()
-      ->fetchAllAssoc('pid', PDO::FETCH_ASSOC);
-
-    // if this type of node does not have a profile
-    // skip setting of records for simple_access_profile
-
-    if (!empty($pid)) {
-      // get default settings for this $pid
-      // note - there may be more than one gid
-      $defaults = db_select('simple_access_profiles_access', 'd')
-        ->fields('d', array('pid', 'gid', 'sa_view', 'sa_update', 'sa_delete'))
-        ->condition('d.pid', $pid)
-        ->execute()
-        ->fetchAllAssoc('gid', PDO::FETCH_ASSOC);
-
-      // for each value of gid set current defaults
-
-      $default = array();
-      foreach ($defaults as $default) {
-        $records[] = array(
-          'realm' => 'simple_access_profile',
-          'gid' => $default['gid'],
-          'grant_view' => $default['sa_view'],
-          'grant_update' => $default['sa_update'],
-          'grant_delete' => $default['sa_delete'],
-          'priority' => 0,
-        );
-      }
+    foreach (array_filter($node->simple_access_profiles) as $pid) {
+      $records[] = array(
+        'realm' => 'simple_access_profile',
+        'gid' => $pid,
+        'grant_view' => 1,
+        'grant_update' => 1,
+        'grant_delete' => 1,
+        'priority' => 0,
+      );
     }
   }
 
@@ -471,82 +341,63 @@ function simple_access_node_access_records($node)
 
 /**
  * Implements hook_node_grants().
- * Tell the node access system what grant IDs the user belongs to for each
- * realm, based on the operation being performed.
  *
- * When the user tries to perform an operation on the node, Backdrop calls
- * hook_node_grants() to determine grant ID and realm for the user. Backdrop
- * looks up the grant ID and realm for the node, and compares them to the
- * grant ID and realm provided here. If grant ID and realm match for both
- * user and node, then the operation is allowed.
- * $account: The user object whose grants are requested.
- * $op: The node operation to be performed, such as 'view', 'update', or 'delete'.
- * Return value: An array whose keys are "realms" of grants, and whose values are
- * arrays of the grant IDs within this realm that this user is being granted.
+ * @TODO implement to correcly return groups in all cases.
  */
+function simple_access_node_grants($account, $op) {
+  $gids = simple_access_groups_from_roles($account->roles);
+  if (!empty($gids)) {
+    $grants['simple_access'] = $gids;
+  }
 
-function simple_access_node_grants($account, $op)
-{
-  $grants = array();
-  // make sure we have an authenticated user
-  if ($account->uid) {
-    $user = $account->uid;
-    $roles = array_values($account->roles);
-    // we now need the grant IDs for role.
-    // get them by using function simple_access_groups_from_roles
-    $gids = simple_access_groups_from_roles($roles);
-    if (!empty($gids)) {
-      $grants['simple_access'] = array_keys($gids);
-    }
-    // we now need profile IDs that permit this operation
+  if (in_array($op, array('view', 'update', 'delete')) && !empty($gids)) {
     $pids = array();
-    if (in_array($op, array('view', 'update', 'delete')) && !empty($gids)) {
-      $pids = db_select('simple_access_profiles_access', 'p')
-        ->fields('p', array('pid'))
-        ->condition('sa_' . $op, '1')
-        ->condition('gid', $gids, 'IN')
-        ->distinct()
-        ->execute()
-        ->fetchAllAssoc('pid', PDO::FETCH_ASSOC);
-
-      if (!empty($pids)) {
-        foreach ($pids as $grant) {
-          $grants['simple_access_profiles'] = array_values($grant);
+    $profiles = config_get('simple_access.settings', 'profiles');
+    foreach ($profiles as $pid => $profile) {
+      foreach ($gids as $gid) {
+        if (!empty($profile['access'][$gid]['sa_' . $op])) {
+          $pids[$pid] = array('pid' => $pid);
         }
       }
     }
+
+    if (!empty($pids)) {
+      $grants['simple_access_profiles'] = $pids;
+    }
   }
-  // add in a grant for the author realm
   $grants['simple_access_author'] = array($account->uid);
+
   return $grants;
 }
 
 /**
  * Implements hook_node_access_explain().
  */
-function simple_access_node_access_explain($row)
-{
+function simple_access_node_access_explain($row) {
   switch ($row->realm) {
     case 'simple_access_author':
       return t('Access for the content owner');
 
     case 'simple_access':
-      $groups = simple_access_get_groups();
-      return t('Access restrictions for the "%group" group', array('%group' => $groups[$row->gid]['name']));
+      $group = simple_access_get_groups($row->gid);
+      if ($group) {
+        return t('Access restrictions for the "%group" group', array('%group' => $group['name']));
+      }
 
     case 'simple_access_profile':
-      $groups = simple_access_get_groups();
+      $message = '';
+      $group = simple_access_get_groups($row->gid);
       $profiles = simple_access_get_profiles();
-      $profile = $profiles[$row->gid];
-
-      $message = t('Access restrictions for profile "%profile"<br /><dt>', array('%profile' => $profile['name']));
-
-      if (!empty($profile['access'])) {
-        foreach ($profile['access'] as $gid => $access) {
-          $perms = array(t('View') => $access['sa_view'], t('Update') => $access['sa_update'], t('Delete') => $access['sa_delete']);
-          $message .= t('"%group" group can @perm.', array('%group' => $groups[$gid]['name'], '@perm' => implode(', ', array_keys(array_filter($perms)))));
+      foreach ($profiles as $profile) {
+        if (!empty($profile['access']) && isset($profile['access'][$row->gid])) {
+          $message = t('Access restrictions for profile "%profile"<br /><dt>', array('%profile' => $profile['name']));
+          foreach ($profile['access'] as $gid => $access) {
+            $perms = array(t('View') => $access['sa_view'], t('Update') => $access['sa_update'], t('Delete') => $access['sa_delete']);
+            $message .= t('"%group" group can @perm.', array('%group' => $group['name'], '@perm' => implode(', ', array_keys(array_filter($perms)))));
+          }
         }
       }
+
       $message .= '</dt>';
 
       return $message;
@@ -558,8 +409,7 @@ function simple_access_node_access_explain($row)
  *
  * For node_form.
  */
-function simple_access_form_node_form_alter(&$form, &$form_state, $form_id)
-{
+function simple_access_form_node_form_alter(&$form, &$form_state, $form_id) {
   if ($simple_access_form = simple_access_form($form_state['node'])) {
     $form = array_merge($form, $simple_access_form);
   }
@@ -570,12 +420,14 @@ function simple_access_form_node_form_alter(&$form, &$form_state, $form_id)
  *
  * For node_type_form.
  */
-function simple_access_form_node_type_form_alter(&$form, &$form_state)
-{
+function simple_access_form_node_type_form_alter(&$form, &$form_state) {
   $type = $form['old_type']['#value'];
   $default = config_get('simple_access.settings', 'simple_access_' . $type);
+  if (empty($default)) {
+    $default = array('simple_access' => array(), 'simple_access_profiles' => array(), 'simple_access_owner' => array());
+  }
 
-  $tmp_form = simple_access_form((object)$default, TRUE);
+  $tmp_form = simple_access_form((object) $default, TRUE);
 
   $form['simple_access'] = $tmp_form['simple_access'];
   $form['simple_access']['simple_access']['owner']['#parents'] = array('simple_access', 'simple_access_owner');
@@ -587,8 +439,7 @@ function simple_access_form_node_type_form_alter(&$form, &$form_state)
 /**
  * Submit callback for the node type alter form.
  */
-function simple_access_node_type_submit(&$form, &$form_state)
-{
+function simple_access_node_type_submit(&$form, &$form_state) {
   $op = isset($form_state['values']['op']) ? $form_state['values']['op'] : '';
   $type = $form_state['values']['type'];
 
@@ -600,8 +451,7 @@ function simple_access_node_type_submit(&$form, &$form_state)
 /**
  * Implements hook_theme().
  */
-function simple_access_theme()
-{
+function simple_access_theme() {
   return array(
     'simple_access_form' => array(
       'render element' => 'form',
@@ -621,8 +471,7 @@ function simple_access_theme()
 /**
  * Simple Access form.
  */
-function simple_access_form($node, $admin = FALSE)
-{
+function simple_access_form($node, $admin = FALSE) {
   // Get the array of checkbox options to use for each form element.
   // If the "Show groups even when user is not a member" setting is
   // enabled, or if the current user has 'administer nodes', let
@@ -634,13 +483,8 @@ function simple_access_form($node, $admin = FALSE)
     return;
   }
 
-  $user_groups = array();
-  $owner_priv = array();
-
-  if (isset($node->type)) {
-    $user_groups = is_array($node->simple_access) ? array_filter($node->simple_access, '_simple_access_filter_access') : array();
-    $owner_priv = is_array($node->simple_access_owner) ? array_filter($node->simple_access_owner) : array();
-  }
+  $user_groups = is_array($node->simple_access) ? array_filter($node->simple_access, '_simple_access_filter_access') : array();
+  $owner_priv = is_array($node->simple_access_owner) ? array_filter($node->simple_access_owner) : array();
   // Set up the outer fieldset.
   $form['simple_access'] = array(
     '#title' => t('Access'),
@@ -686,39 +530,21 @@ function simple_access_form($node, $admin = FALSE)
       'name' => t('Owner permissions'),
       'access' => user_access('assign owner permissions') && isset($node->uid) && $node->uid,
     );
-    $access = array();
-    if (isset($node->uid)) {
-      $access = array('owner' => $node->simple_access_owner);
-    }
+    $access = array('owner' => $node->simple_access_owner);
     $form['simple_access']['simple_access']['owner'] = simple_access_form_row('owner', $group, $access, $admin);
     $form['simple_access']['simple_access']['owner']['#parents'] = array('simple_access_owner');
 
-    if (isset($node->uid)) {
-      foreach ($groups as $gid => $group) {
-        $form['simple_access']['simple_access'][$gid] = simple_access_form_row($gid, $group, $node->simple_access, $admin);
-      }
-    } else {
-      foreach ($groups as $gid => $group) {
-        $form['simple_access']['simple_access'][$gid] = simple_access_form_row($gid, $group, null, $admin);
-      }
-
+    foreach ($groups as $gid => $group) {
+      $form['simple_access']['simple_access'][$gid] = simple_access_form_row($gid, $group, $node->simple_access, $admin);
     }
   }
-
-  $form['simple_access']['simple_access']['extra'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Update access settings for all nodes of this type'),
-    '#default_value' => 0,
-    '#access' => $admin,
-  );
   return $form;
 }
 
 /**
  * Create a single row in the form.
  */
-function simple_access_form_row($gid, $group, $access, $admin = FALSE)
-{
+function simple_access_form_row($gid, $group, $access, $admin = FALSE) {
   if ($admin) {
     $display = array('view' => 1, 'update' => 1, 'delete' => 1);
   } else {
@@ -767,21 +593,14 @@ function simple_access_form_row($gid, $group, $access, $admin = FALSE)
 /**
  * Get all simple access roles.
  */
-function simple_access_get_roles($gid)
-{
-  $result = db_select('simple_access_roles', 'r')
-    ->fields('r', array('role'))
-    ->condition('gid', $gid)
-    ->execute();
-
-  return array_keys($result->fetchAllAssoc('role', PDO::FETCH_ASSOC));
+function simple_access_get_roles($gid) {
+  return config_get('simple_access.settings', 'groups.' . $gid . '.roles');
 }
 
 /**
  * Get all profiles as options for a select list.
  */
-function simple_access_get_profiles_select()
-{
+function simple_access_get_profiles_select() {
   $profiles = simple_access_get_profiles();
 
   return array_map('_simple_access_filter_profiles', $profiles);
@@ -790,106 +609,70 @@ function simple_access_get_profiles_select()
 /**
  * Callback to filter profiles.
  */
-function _simple_access_filter_profiles($a)
-{
+function _simple_access_filter_profiles($a) {
   return $a['name'];
 }
 
 /**
  * Get simple access profiles.
  */
-function simple_access_get_profiles($pid = NULL)
-{
+function simple_access_get_profiles($pid = NULL) {
+  $config = config('simple_access.settings');
   $profiles = array();
-
-  $query = db_select('simple_access_profiles', 'p')
-    ->fields('p', array('pid', 'name'))
-    ->orderBy('weight', 'ASC')
-    ->orderBy('name');
+  $profiles = $config->get('profiles');
+  backdrop_sort($profiles, array('weight', 'name'));
 
   if ($pid) {
-    $query->condition('pid', $pid);
+    $profiles = $config->get('profiles.' . $pid);
   }
-  $profiles = $query->execute()
-    ->fetchAllAssoc('pid', PDO::FETCH_ASSOC);
 
-  $query = db_select('simple_access_profiles_access', 'a')
-    ->fields('a', array('pid', 'gid', 'sa_view', 'sa_update', 'sa_delete'))
-    ->orderBy('pid');
-
-  if ($pid) {
-    $query->condition('pid', $pid);
-  }
-  $result = $query->execute();
-
-  while ($a = $result->fetchAssoc(PDO::FETCH_ASSOC)) {
-    if (isset($profiles[$a['pid']])) {
-      $profiles[$a['pid']]['access'][$a['gid']] = $a;
-    }
-  }
-  return isset($pid) ? $profiles[$pid] : $profiles;
+  return $profiles;
 }
 
 /**
  * Return list of groups.
  */
-function simple_access_get_groups($gid = NULL)
-{
-  $groups = array();
-  $query = db_select('simple_access_groups', 'g')
-    ->fields('g', array('gid', 'name', 'weight'))
-    ->orderBy('weight', 'ASC')
-    ->orderBy('name', 'ASC')
-    ->distinct(TRUE);
-
+function simple_access_get_groups($gid = NULL) {
+  $config = config('simple_access.settings');
+  $groups = $config->get('groups');
+  if (empty($groups)) {
+    $groups = array();
+  }
+  backdrop_sort($groups);
   if ($gid) {
-    $query->condition('gid', $gid);
+    $groups = $config->get('groups.' . $gid);
   }
-  $result = $query->execute();
-
-  foreach ($result->fetchAllAssoc('gid', PDO::FETCH_ASSOC) as $g) {
-    $groups[$g['gid']]['name'] = $g['name'];
-    $groups[$g['gid']]['gid'] = $g['gid'];
-    $groups[$g['gid']]['weight'] = $g['weight'];
-    $groups[$g['gid']]['roles'] = simple_access_get_roles($g['gid']);
-  }
-  return $gid ? $groups[$gid] : $groups;
+  return $groups;
 }
 
 /**
  * Return groups for which user is a member.
  */
-function simple_access_group_select()
-{
+function simple_access_group_select() {
   $groups =& backdrop_static(__FUNCTION__);
 
   if (empty($groups)) {
     global $user;
     $default_access = user_access('administer nodes') || config_get('simple_access.settings', 'simple_access_showgroups');
 
-    $groups = array();
-    $result = db_select('simple_access_groups', 'g')
-      ->fields('g', array('gid', 'name'))
-      ->orderBy('weight')
-      ->orderBy('name')
-      ->execute();
+    $groups = config_get('simple_access.settings', 'groups');
+    if (empty($groups)) {
+      $groups = array();
+    } else {
+      backdrop_sort($groups, array('weight', 'name'));
+    }
 
-    while ($group = $result->fetchAssoc(PDO::FETCH_ASSOC)) {
-      $groups[$group['gid']] = $group;
-      $groups[$group['gid']]['access'] = $default_access;
+    foreach ($groups as $gid => $group) {
+      $groups[$gid]['access'] = $default_access;
     }
 
     if (!$default_access) {
       // Return just groups for which user is a member.
       $roles = array_keys($user->roles);
-      $query = db_select('simple_access_groups', 'g')
-        ->fields('g', array('gid'))
-        ->condition('role', $roles, 'IN')
-        ->groupBy('gid');
-      $query->innerJoin('simple_access_roles', 'r', 'g.gid = r.gid');
-      $result = $query->execute();
-      while ($group = $result->fetchAssoc(PDO::FETCH_ASSOC)) {
-        $groups[$group['gid']]['access'] = TRUE;
+      foreach ($groups as $gid => $group) {
+        if (array_intersect($group['roles'], $roles)) {
+          $groups[$gid]['access'] = TRUE;
+        }
       }
     }
   }
@@ -902,25 +685,24 @@ function simple_access_group_select()
  * $roles string
  *   A linear list a role ids.
  */
-function simple_access_groups_from_roles($roles)
-{
+function simple_access_groups_from_roles($roles) {
   // There probably should be some 'static' stuff going on here
   // always return gid 0 just to be safe.
   $gids = array();
-  $result = db_select('simple_access_roles', 'r')
-    ->fields('r', array('gid'))
-    ->condition('role', $roles, 'IN')
-    ->execute();
+  $groups = config_get('simple_access.settings', 'groups');
+  foreach ($groups as $gid => $group) {
+    if (array_intersect($group['roles'], $roles)) {
+      $gids[] = $gid;
+    }
+  }
 
-  $gids = $result->fetchAllAssoc('gid', PDO::FETCH_ASSOC);
   return $gids;
 }
 
 /**
  * Check if a user's role is in a group.
  */
-function simple_access_groups_check_user($groups)
-{
+function simple_access_groups_check_user($groups) {
   global $user;
 
   $roles = array_keys($user->roles);
@@ -933,70 +715,45 @@ function simple_access_groups_check_user($groups)
 /**
  * Save group of roles into the database.
  */
-function simple_access_save_group($edit)
-{
-  if (!empty($edit['gid'])) {
-    db_merge('simple_access_groups')
-      ->key(array('gid' => $edit['gid']))
-      ->fields(array(
-        'name' => $edit['name'],
-        'weight' => $edit['weight'],
-      ))
-      ->execute();
-  } else {
-    $edit['gid'] = db_insert('simple_access_groups', array('return' => Database::RETURN_INSERT_ID))
-      ->fields(array(
-        'name' => $edit['name'],
-        'weight' => $edit['weight'],
-      ))
-      ->execute();
-  }
-  db_delete('simple_access_roles')
-    ->condition('gid', $edit['gid'])
-    ->execute();
-  if (is_array($edit['roles'])) {
-    foreach ($edit['roles'] as $key => $value) {
-      if ($value) {
-        db_insert('simple_access_roles')
-          ->fields(array(
-            'role' => $key,
-            'gid' => $edit['gid'],
-          ))
-          ->execute();
-      }
-    }
-  }
+function simple_access_save_group($edit) {
+  config_set('simple_access.settings', 'groups.' . $edit['gid'], array(
+    'gid' => $edit['gid'],
+    'name' => $edit['name'],
+    'weight' => (int) $edit['weight'],
+    'roles' => array_keys(array_filter($edit['roles'])),
+  ));
 }
 
 /**
  * Delete profile from all 3 tables.
  */
-function simple_access_delete_profile($pid)
-{
-  foreach (array('simple_access_profiles', 'simple_access_profiles_access', 'simple_access_profiles_node') as $table) {
-    db_delete($table)
-      ->condition('pid', $pid)
-      ->execute();
-  }
+function simple_access_delete_profile($pid) {
+  db_delete('simple_access_profiles_node')
+    ->condition('pid', $pid)
+    ->execute();
+  config_clear('simple_access.settings', 'profiles.' . $pid);
 }
 
 /**
  * Delete group from all 3 tables.
  */
-function simple_access_delete_group($gid)
-{
-  foreach (array('simple_access_roles', 'simple_access_groups', 'simple_access_node') as $table) {
-    db_delete($table)
-      ->condition('gid', $gid)
-      ->execute();
+function simple_access_delete_group($gid) {
+  $config = config('simple_access.settings');
+  db_delete('simple_access_node')
+    ->condition('gid', $gid)
+    ->execute();
+  $config->clear('groups.' . $gid);
+  $profiles = $config->get('profiles');
+  foreach ($profiles as $pid => $profile) {
+    $config->clear('profiles.' . $pid . '.access.' . $gid);
   }
+  $config->save();
 }
 
 /**
  * Filter the access records for the current user.
  */
-function _simple_access_filter_access($a)
-{
+function _simple_access_filter_access($a) {
   $groups = simple_access_group_select();
 
   return isset($a['gid']) && isset($groups[$a['gid']]['access']) && $groups[$a['gid']]['access'];
@@ -1005,8 +762,7 @@ function _simple_access_filter_access($a)
 /**
  * Implements hook_action_info().
  */
-function simple_access_action_info()
-{
+function simple_access_action_info() {
   return array(
     'simple_access_owner_grant' => array(
       'type' => 'node',
@@ -1057,15 +813,12 @@ function simple_access_action_info()
       'behavior' => array('changes_property'),
     ),
   );
-}
-
-;
+};
 
 /**
  * Configure grant content owner permissions.
  */
-function simple_access_owner_grant_form($settings = array())
-{
+function simple_access_owner_grant_form($settings = array()) {
   $form = array();
 
   $form['sa_owner_permissions'] = array(
@@ -1086,8 +839,7 @@ function simple_access_owner_grant_form($settings = array())
 /**
  * Submit callback for the owner grant form.
  */
-function simple_access_owner_grant_submit($form, &$form_state)
-{
+function simple_access_owner_grant_submit($form, &$form_state) {
   $settings = array('sa_owner_permissions' => $form_state['values']['sa_owner_permissions']);
   return $settings;
 }
@@ -1095,8 +847,7 @@ function simple_access_owner_grant_submit($form, &$form_state)
 /**
  * Action to grant permissions to the owner.
  */
-function simple_access_owner_grant($node, $context)
-{
+function simple_access_owner_grant($node, $context) {
   foreach (array_filter($context['sa_owner_permissions']) as $option) {
     $node->simple_access_owner[$option] = 1;
   }
@@ -1105,8 +856,7 @@ function simple_access_owner_grant($node, $context)
 /**
  * Configure revoke content owner permissions.
  */
-function simple_access_owner_revoke_form($settings = array())
-{
+function simple_access_owner_revoke_form($settings = array()) {
   $form = array();
 
   $form['sa_owner_permissions'] = array(
@@ -1127,8 +877,7 @@ function simple_access_owner_revoke_form($settings = array())
 /**
  * Submit callback for the owner revoke form.
  */
-function simple_access_owner_revoke_submit($form, &$form_state)
-{
+function simple_access_owner_revoke_submit($form, &$form_state) {
   $settings = array('sa_owner_permissions' => $form_state['values']['sa_owner_permissions']);
   return $settings;
 }
@@ -1136,8 +885,7 @@ function simple_access_owner_revoke_submit($form, &$form_state)
 /**
  * Action to grant permissions to the owner.
  */
-function simple_access_owner_revoke($node, $context)
-{
+function simple_access_owner_revoke($node, $context) {
   foreach (array_filter($context['sa_owner_permissions']) as $option) {
     $node->simple_access_owner[$option] = 0;
   }
@@ -1146,12 +894,11 @@ function simple_access_owner_revoke($node, $context)
 /**
  * Configure grant group permissions.
  */
-function simple_access_group_grant_form($context)
-{
+function simple_access_group_grant_form($context) {
   $form = array();
 
   $display = config_get('simple_access.settings', 'simple_access_display', array(
-      'view' => 1, 'update' => 0, 'delete' => 0)
+    'view' => 1, 'update' => 0, 'delete' => 0)
   );
 
   $form['sa_group_permissions'] = array(
@@ -1201,8 +948,7 @@ function simple_access_group_grant_form($context)
 /**
  * Submit callback for group grant form.
  */
-function simple_access_group_grant_submit($form, &$form_state)
-{
+function simple_access_group_grant_submit($form, &$form_state) {
   $context = array('sa_group_permissions' => $form_state['values']['sa_group_permissions']);
   return $context;
 }
@@ -1210,8 +956,7 @@ function simple_access_group_grant_submit($form, &$form_state)
 /**
  * Action to grant permissions to the owner.
  */
-function simple_access_group_grant($node, $context)
-{
+function simple_access_group_grant($node, $context) {
   foreach ($context['sa_group_permissions'] as $gid => $group) {
     foreach (array_keys(array_filter($group)) as $option) {
       $node->simple_access[$gid][$option] = 1;
@@ -1224,8 +969,7 @@ function simple_access_group_grant($node, $context)
 /**
  * Configure revoke group permissions.
  */
-function simple_access_group_revoke_form($context = array())
-{
+function simple_access_group_revoke_form($context = array()) {
   $form = array();
 
   $display = config_get('simple_access.settings', 'simple_access_display');
@@ -1278,8 +1022,7 @@ function simple_access_group_revoke_form($context = array())
 /**
  * Submit callback for the group revoke form.
  */
-function simple_access_group_revoke_submit($form, &$form_state)
-{
+function simple_access_group_revoke_submit($form, &$form_state) {
   $context = array('sa_group_permissions' => $form_state['values']['sa_group_permissions']);
   return $context;
 }
@@ -1287,8 +1030,7 @@ function simple_access_group_revoke_submit($form, &$form_state)
 /**
  * Action to revoke permissions to the owner.
  */
-function simple_access_group_revoke($node, $context)
-{
+function simple_access_group_revoke($node, $context) {
   foreach ($context['sa_group_permissions'] as $gid => $group) {
     foreach (array_keys(array_filter($group)) as $option) {
       $node->simple_access[$gid][$option] = 0;
@@ -1301,8 +1043,7 @@ function simple_access_group_revoke($node, $context)
 /**
  * Configure enable security profile.
  */
-function simple_access_profile_enable_form($context = array())
-{
+function simple_access_profile_enable_form($context = array()) {
   $form = array();
 
   $form['sa_profiles'] = array(
@@ -1319,8 +1060,7 @@ function simple_access_profile_enable_form($context = array())
 /**
  * Submit handler for the profile enable form.
  */
-function simple_access_profile_enable_submit($form, &$form_state)
-{
+function simple_access_profile_enable_submit($form, &$form_state) {
   $context = array('sa_profiles' => $form_state['values']['sa_profiles']);
   return $context;
 }
@@ -1328,8 +1068,7 @@ function simple_access_profile_enable_submit($form, &$form_state)
 /**
  * Action enable access profile.
  */
-function simple_access_profile_enable($node, $context)
-{
+function simple_access_profile_enable($node, $context) {
   foreach (array_filter($context['sa_profiles']) as $pid) {
     if (!in_array($pid, $node->simple_access_profiles)) {
       $node->simple_access_profiles[] = $pid;
@@ -1342,8 +1081,7 @@ function simple_access_profile_enable($node, $context)
 /**
  * Configure disable security profile.
  */
-function simple_access_profile_disable_form($context = array())
-{
+function simple_access_profile_disable_form($context = array()) {
   $form = array();
 
   $form['sa_profiles'] = array(
@@ -1360,8 +1098,7 @@ function simple_access_profile_disable_form($context = array())
 /**
  * Submit callback for simple_access_profile_disable form.
  */
-function simple_access_profile_disable_submit($form, &$form_state)
-{
+function simple_access_profile_disable_submit($form, &$form_state) {
   $context = array('sa_profiles' => $form_state['values']['sa_profiles']);
   return $context;
 }
@@ -1369,8 +1106,7 @@ function simple_access_profile_disable_submit($form, &$form_state)
 /**
  * Action to disable access profile.
  */
-function simple_access_profile_disable($node, $context)
-{
+function simple_access_profile_disable($node, $context) {
   foreach (array_filter($context['sa_profiles']) as $pid) {
     if (in_array($pid, $node->simple_access_profiles)) {
       unset($node->simple_access_profiles[array_search($pid, $node->simple_access_profiles)]);
@@ -1383,16 +1119,14 @@ function simple_access_profile_disable($node, $context)
 /**
  * Implements hook_views_api().
  */
-function simple_access_views_api()
-{
+function simple_access_views_api() {
   return array('api' => 2.0);
 }
 
 /**
  * Implements hook_content_extra_fields().
  */
-function simple_access_content_extra_fields($type_name)
-{
+function simple_access_content_extra_fields($type_name) {
   $fields['simple_access'] = array(
     'label' => t('Simple Access'),
     'description' => t('Simple Access module form.'),
@@ -1405,16 +1139,14 @@ function simple_access_content_extra_fields($type_name)
 /**
  * Load a group.
  */
-function simple_access_group_load($gid)
-{
+function simple_access_group_load($gid) {
   return simple_access_get_groups($gid);
 }
 
 /**
  * Load a profile.
  */
-function simple_access_profile_load($pid)
-{
+function simple_access_profile_load($pid) {
   return simple_access_get_profiles($pid);
 }
 
@@ -1428,14 +1160,4 @@ function simple_access_config_info()
     'group' => t('Configuration'),
   );
   return $prefixes;
-}
-
-/**
- * Implements hook_autoload_info().
- */
-function simple_access_autoload_info()
-{
-  return array(
-    'SimpleAccessOwnerTestCase' => 'tests/simple_access.test',
-  );
 }

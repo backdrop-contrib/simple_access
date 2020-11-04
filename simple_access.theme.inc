@@ -98,8 +98,6 @@ function theme_simple_access_page_overview_list(&$form) {
 
 /**
  * Theme a list of simple access profiles as draggable table.
- * Use function theme_filter_admin_overview from core module
- * filter\filter.theme.inc as a model for this revised version.
  */
 function theme_simple_access_profile_list($variables) {
   $form =& $variables['form'];
