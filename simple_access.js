@@ -10,7 +10,6 @@ Backdrop.behaviors.simpleAccessFieldsetSummaries = {
   attach: function (context) {
     $(context).find('fieldset.simple-access-settings').backdropSetSummary(function (element) {
       var $element = $(element);
-      console.log($element);
       var checkbox = $element.find('.form-checkbox:checked').size();
 
       if (!checkbox) {
