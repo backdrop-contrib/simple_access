@@ -618,7 +618,6 @@ function _simple_access_filter_profiles($a) {
  */
 function simple_access_get_profiles($pid = NULL) {
   $config = config('simple_access.settings');
-  $profiles = array();
   $profiles = $config->get('profiles');
   if (empty($profiles)) {
     $profiles = array();
