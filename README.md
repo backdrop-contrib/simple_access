@@ -33,13 +33,12 @@ content public.
 
 ### Creating a profile
 
-Profiles allow administrators to provide finer grade permissions to access groups.
-Each profile consists of as many access groups as you like and the specific
-View, Update, Delete settings for each group. Profiles are a method of 
-defining the complete security configuration for a node. Within a single 
-profile the site administrator can define exactly how a node will provide 
-security. This allows people with less knowledge to administer access settings 
-without fear of exposing nodes to site visitors which should not have access.
+Profiles allow administrators to combine the View permission provided by
+this module with existing Update and Delete permissions available in core
+for specific access groups. By combining these permissions in one location
+it is easier for site admistrators to confidently assign permissions in one
+location without fear of accidentally exposing nodes to site visitors which 
+should not have access.
 
 ## License
 
