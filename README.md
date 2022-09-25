@@ -23,20 +23,23 @@ by anyone in a certain role.
 
 ### Creating an access group
 
-Access groups are made up of user roles. Creating an access group
-allows you to define the content accessible to those uesrs. By
-default, simple_access makes all content public.
+Access groups simply allow you to group and manage several roles 
+together. Access groups alone allow you to set view permissions for
+each group, but nothing more. By default, simple_access makes all 
+content public.
 
 1. Once installed, navigate to `administer > access control > simple access > add group`
    and fill in the form fields as required.
 
 ### Creating a profile
 
-Profiles are a method of defining the complete security configuration
-for a node. So within a single profile the system administrator can
-define exactly how a node will provide security. This means that users
-with less knowledge can secure nodes without fear of exposing nodes to
-users which should not have access.
+Profiles allow administrators to provide finer grade permissions to access groups.
+Each profile consists of as many access groups as you like and the specific
+View, Update, Delete settings for each group. Profiles are a method of 
+defining the complete security configuration for a node. Within a single 
+profile the site administrator can define exactly how a node will provide 
+security. This allows people with less knowledge to administer access settings 
+without fear of exposing nodes to site visitors which should not have access.
 
 ## License
 
