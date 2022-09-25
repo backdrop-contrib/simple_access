@@ -2,7 +2,8 @@
 
 The Simple Access module provides a default View permission to content 
 types that can also be managed for each individual node. This makes it
-possible to restrict View access to any Content Type or individual nodes. 
+possible to restrict View access, by role or group of roles, to any 
+Content Type or to individual nodes. 
 
 This module also provides an option for creating Access Profiles that 
 manage the View permission provided by this module along with the 
