@@ -34,11 +34,11 @@ content public.
 ### Creating a profile
 
 Profiles allow administrators to combine the View permission provided by
-this module with existing Update and Delete permissions available in core
-for specific access groups. By combining these permissions in one location
-it is easier for site admistrators to confidently assign permissions in one
-location without fear of accidentally exposing nodes to site visitors which 
-should not have access.
+this module with existing Update and Delete permissions, already available 
+in core, for specific access groups. By combining these permissions in 
+one location it is easier for site admistrators to confidently assign 
+permissions without fear of accidentally exposing nodes to site visitors 
+that should not have access.
 
 ## License
 
