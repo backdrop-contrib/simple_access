@@ -1,11 +1,14 @@
 # Simple Access
 
-The Simple Access module provides an easy way to make nodes accessible
-by only a group (or groups) of users. It defaults to only managing
-access of view-ability, so that administrators can simply make some
-nodes "private". However, the module can also manage access to editing and
-deleting of nodes as well, allowing for nodes that are editable
-by anyone in a certain role.
+The Simple Access module provides a default View permission to content 
+types that can also be managed for each individual node. This makes it
+possible to restrict View access, by role or group of roles, to any 
+Content Type or to individual nodes. 
+
+This module also provides an option for creating Access Profiles that 
+manage the View permission provided by this module along with the 
+Update/Edit and Delete permissions that are already available in core.
+Access Profiles can be applied to content types or individual nodes.
 
 ## Installation
 
@@ -21,22 +24,24 @@ by anyone in a certain role.
 - Each content type has a new setting 'Access' which, if used
   will restrict access to that content type.
 
-### Creating an access group
+### Creating an Access Group
 
-Access groups are made up of user roles. Creating an access group
-allows you to define the content accessible to those uesrs. By
-default, simple_access makes all content public.
+Access Groups simply allow you to group and manage several Roles 
+together. Access Groups alone allow you to set the View permission for
+each group, but nothing more. By default, simple_access makes all 
+content public.
 
 1. Once installed, navigate to `administer > access control > simple access > add group`
    and fill in the form fields as required.
 
 ### Creating a profile
 
-Profiles are a method of defining the complete security configuration
-for a node. So within a single profile the system administrator can
-define exactly how a node will provide security. This means that users
-with less knowledge can secure nodes without fear of exposing nodes to
-users which should not have access.
+Profiles allow administrators to combine the View permission provided by
+this module with existing Update and Delete permissions, already available 
+in core, for specific Access Groups. By combining these permissions in 
+one location it is easier for site admistrators to confidently assign 
+permissions without fear of accidentally exposing nodes to site visitors 
+that should not have access.
 
 ## License
 
