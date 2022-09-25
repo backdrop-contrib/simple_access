@@ -7,7 +7,7 @@ possible to restrict View access to any Content Type or individual nodes.
 This module also provides an option for creating Access Profiles that 
 manage the View permission provided by this module along with the 
 Update/Edit and Delete permissions that are already available in core.
-Access Profiles can be applied to Content Types or individual Nodes.
+Access Profiles can be applied to content types or individual nodes.
 
 ## Installation
 
@@ -37,9 +37,9 @@ content public.
 
 Profiles allow administrators to combine the View permission provided by
 this module with existing Update and Delete permissions, already available 
-in core, for specific Access Groups. By combining these Permissions in 
+in core, for specific Access Groups. By combining these permissions in 
 one location it is easier for site admistrators to confidently assign 
-Permissions without fear of accidentally exposing Nodes to site visitors 
+permissions without fear of accidentally exposing nodes to site visitors 
 that should not have access.
 
 ## License
