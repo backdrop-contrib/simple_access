@@ -2,11 +2,12 @@
 
 The Simple Access module provides a default View permission to content 
 types that can also be managed for each individual node. This makes it
-possible to restrict View acces to Content Types or individual nodes. 
+possible to restrict View access to any Content Type or individual nodes. 
 
 This module also provides an option for creating Access Profiles that 
-manage the View Permission provided by this module along with the 
+manage the View permission provided by this module along with the 
 Update/Edit and Delete permissions that are already available in core.
+Access Profiles can be applied to Content Types or individual Nodes.
 
 ## Installation
 
@@ -22,10 +23,10 @@ Update/Edit and Delete permissions that are already available in core.
 - Each content type has a new setting 'Access' which, if used
   will restrict access to that content type.
 
-### Creating an access group
+### Creating an Access Group
 
-Access groups simply allow you to group and manage several roles 
-together. Access groups alone allow you to set view permissions for
+Access Groups simply allow you to group and manage several Roles 
+together. Access Groups alone allow you to set the View permission for
 each group, but nothing more. By default, simple_access makes all 
 content public.
 
@@ -36,9 +37,9 @@ content public.
 
 Profiles allow administrators to combine the View permission provided by
 this module with existing Update and Delete permissions, already available 
-in core, for specific access groups. By combining these permissions in 
+in core, for specific Access Groups. By combining these Permissions in 
 one location it is easier for site admistrators to confidently assign 
-permissions without fear of accidentally exposing nodes to site visitors 
+Permissions without fear of accidentally exposing Nodes to site visitors 
 that should not have access.
 
 ## License
