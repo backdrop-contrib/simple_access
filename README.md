@@ -1,11 +1,12 @@
 # Simple Access
 
-The Simple Access module provides an easy way to make nodes accessible
-by only a group (or groups) of users. It defaults to only managing
-access of view-ability, so that administrators can simply make some
-nodes "private". However, the module can also manage access to editing and
-deleting of nodes as well, allowing for nodes that are editable
-by anyone in a certain role.
+The Simple Access module provides a default View permission to content 
+types that can also be managed for each individual node. This makes it
+possible to restrict View acces to Content Types or individual nodes. 
+
+This module also provides an option for creating Access Profiles that 
+manage the View Permission provided by this module along with the 
+Update/Edit and Delete permissions that are already available in core.
 
 ## Installation
 
